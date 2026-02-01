@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { generateObject } from 'ai';
+import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import { db } from '../../../lib/db';
 import { categories, type Category } from '../../../lib/db/schema';
@@ -100,29 +100,32 @@ export const POST: APIRoute = async (context) => {
       date: body.date,
     });
 
-    // Generate categorization
-    const result = await generateObject({
+    // Generate categorization using structured output
+    const result = await generateText({
       model,
-      schema: categorizationResultSchema,
+      output: Output.object({ schema: categorizationResultSchema }),
       prompt,
       temperature: 0.3, // Lower temperature for more consistent results
     });
 
+    // Extract the structured output
+    const suggestion = { ...result.output };
+
     // Validate that the suggested category exists
-    const suggestedCategory = userCategories.find(c => c.id === result.object.categoryId);
-    if (result.object.categoryId && !suggestedCategory) {
+    const suggestedCategory = userCategories.find(c => c.id === suggestion.categoryId);
+    if (suggestion.categoryId && !suggestedCategory) {
       // Try to match by name if ID doesn't match
       const categoryByName = userCategories.find(
-        c => c.name.toLowerCase() === result.object.categoryName.toLowerCase()
+        c => c.name.toLowerCase() === suggestion.categoryName.toLowerCase()
       );
       if (categoryByName) {
-        result.object.categoryId = categoryByName.id;
+        suggestion.categoryId = categoryByName.id;
       }
     }
 
     return json({
       success: true,
-      suggestion: result.object,
+      suggestion,
       availableCategories: userCategories.map(c => ({
         id: c.id,
         name: c.name,

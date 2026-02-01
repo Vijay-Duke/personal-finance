@@ -92,17 +92,17 @@ export const transactions = sqliteTable('transactions', {
   updatedAt: integer('updated_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-}, (table) => ({
+}, (table) => [
   // Indexes for common queries
-  householdDateIdx: index('transaction_household_date_idx')
+  index('transaction_household_date_idx')
     .on(table.householdId, table.date),
-  accountDateIdx: index('transaction_account_date_idx')
+  index('transaction_account_date_idx')
     .on(table.accountId, table.date),
-  categoryIdx: index('transaction_category_idx')
+  index('transaction_category_idx')
     .on(table.categoryId),
-  externalIdIdx: index('transaction_external_id_idx')
+  index('transaction_external_id_idx')
     .on(table.externalId),
-}));
+]);
 
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
@@ -169,11 +169,11 @@ export const transactionTags = sqliteTable('transaction_tags', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-}, (table) => ({
+}, (table) => [
   // Composite primary key not directly supported, use unique index
-  uniqueTransactionTag: index('unique_transaction_tag_idx')
+  index('unique_transaction_tag_idx')
     .on(table.transactionId, table.tagId),
-}));
+]);
 
 export type TransactionTag = typeof transactionTags.$inferSelect;
 export type NewTransactionTag = typeof transactionTags.$inferInsert;

@@ -102,14 +102,13 @@ export const POST: APIRoute = async (context) => {
     const updatedMessages = [...currentMessages, newMessage];
 
     // Update conversation with new message
-    const [updated] = await db
+    await db
       .update(aiConversations)
       .set({
         messages: updatedMessages,
         updatedAt: new Date(),
       })
-      .where(eq(aiConversations.id, id))
-      .returning();
+      .where(eq(aiConversations.id, id));
 
     return created(newMessage);
   } catch (err) {
@@ -151,14 +150,13 @@ export const DELETE: APIRoute = async (context) => {
     }
 
     // Clear messages
-    const [updated] = await db
+    await db
       .update(aiConversations)
       .set({
         messages: [],
         updatedAt: new Date(),
       })
-      .where(eq(aiConversations.id, id))
-      .returning();
+      .where(eq(aiConversations.id, id));
 
     return json({ success: true, messageCount: 0 });
   } catch (err) {

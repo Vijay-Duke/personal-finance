@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { db } from '../../../lib/db';
 import { notifications } from '../../../lib/db/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { getSession } from '../../../lib/auth/session';
 import { json, error, unauthorized } from '../../../lib/api/response';
 
@@ -32,26 +32,13 @@ export const POST: APIRoute = async (context) => {
       conditions.push(eq(notifications.type, typeFilter as typeof notifications.$inferSelect.type));
     }
 
-    const result = await db
+    await db
       .update(notifications)
       .set({
         isRead: true,
         readAt: new Date(),
       })
       .where(and(...conditions));
-
-    // Get count of affected rows (Drizzle doesn't return this directly for updates without returning())
-    // We'll query to get the updated count
-    const updatedNotifications = await db
-      .select({ id: notifications.id })
-      .from(notifications)
-      .where(
-        and(
-          eq(notifications.userId, session.user.id),
-          eq(notifications.isRead, true),
-          isNull(notifications.readAt) // This won't work as expected, so let's use a different approach
-        )
-      );
 
     return json({
       success: true,

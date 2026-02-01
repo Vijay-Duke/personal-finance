@@ -15,7 +15,6 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
 } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react';
 
@@ -40,6 +39,7 @@ interface CategoryData {
   name: string;
   value: number;
   color: string;
+  fill: string; // Recharts uses fill property directly
   count: number;
 }
 
@@ -141,12 +141,16 @@ export function SpendingChart({ months = 6 }: SpendingChartProps) {
       });
 
     return Array.from(categoryMap.entries())
-      .map(([name, values], index) => ({
-        name,
-        value: values.amount,
-        color: values.color || COLORS[index % COLORS.length],
-        count: values.count,
-      }))
+      .map(([name, values], index) => {
+        const color = values.color || COLORS[index % COLORS.length];
+        return {
+          name,
+          value: values.amount,
+          color,
+          fill: color, // Recharts Pie uses fill property directly from data
+          count: values.count,
+        };
+      })
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
   }, [data?.transactions]);
@@ -379,11 +383,7 @@ export function SpendingChart({ months = 6 }: SpendingChartProps) {
                       outerRadius={80}
                       paddingAngle={2}
                       dataKey="value"
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
+                    />
                     <Tooltip
                       formatter={(value) => formatCurrency(Number(value))}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}

@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/query/client';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 interface QueryProviderProps {
   children: ReactNode;
@@ -23,7 +24,8 @@ interface QueryProviderProps {
  * ```
  */
 export function QueryProvider({ children }: QueryProviderProps) {
-  const queryClient = getQueryClient();
+  // Use useState to ensure the same client instance is used across renders
+  const [queryClient] = useState(() => getQueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>

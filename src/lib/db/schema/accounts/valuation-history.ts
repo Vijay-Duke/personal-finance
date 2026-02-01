@@ -45,11 +45,11 @@ export const valuationHistory = sqliteTable('valuation_history', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-}, (table) => ({
-  // Index for efficient date-based queries
-  accountDateIdx: index('valuation_account_date_idx').on(table.accountId, table.date),
-  dateIdx: index('valuation_date_idx').on(table.date),
-}));
+}, (table) => [
+  // Indexes for efficient date-based queries
+  index('valuation_account_date_idx').on(table.accountId, table.date),
+  index('valuation_date_idx').on(table.date),
+]);
 
 export type ValuationHistory = typeof valuationHistory.$inferSelect;
 export type NewValuationHistory = typeof valuationHistory.$inferInsert;

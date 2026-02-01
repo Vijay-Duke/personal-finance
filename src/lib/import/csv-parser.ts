@@ -36,20 +36,6 @@ export interface ColumnMapping {
   credit?: string;
 }
 
-// Common date formats to try
-const DATE_FORMATS = [
-  // ISO
-  /^(\d{4})-(\d{2})-(\d{2})$/,
-  // US: MM/DD/YYYY
-  /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
-  // AU/UK: DD/MM/YYYY
-  /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
-  // DD-MM-YYYY
-  /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
-  // YYYY/MM/DD
-  /^(\d{4})\/(\d{2})\/(\d{2})$/,
-];
-
 /**
  * Parse a date string into a Date object
  */
