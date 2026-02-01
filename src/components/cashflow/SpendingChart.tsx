@@ -385,7 +385,7 @@ export function SpendingChart({ months = 6 }: SpendingChartProps) {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
+                      formatter={(value) => formatCurrency(Number(value))}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                     />
                   </PieChart>
@@ -393,7 +393,7 @@ export function SpendingChart({ months = 6 }: SpendingChartProps) {
 
                 {/* Category Legend */}
                 <div className="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto">
-                  {categoryData.map((cat, index) => (
+                  {categoryData.map((cat) => (
                     <div key={cat.name} className="flex items-center gap-2 text-sm">
                       <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
