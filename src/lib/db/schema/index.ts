@@ -80,3 +80,131 @@ export {
   type NewAIConversation,
   type AIMessage,
 } from './ai-conversation';
+
+// Categories
+export {
+  categories,
+  categoryTypes,
+  defaultCategories,
+  type Category,
+  type NewCategory,
+  type CategoryType,
+} from './category';
+
+// Integrations (Phase 7)
+export {
+  dataSources,
+  dataSourceTypes,
+  dataSourceProviders,
+  syncFrequencies,
+  type DataSource,
+  type NewDataSource,
+  type DataSourceType,
+  type DataSourceProvider,
+  type SyncFrequency,
+} from './integrations';
+
+export {
+  exchangeRates,
+  type ExchangeRate,
+  type NewExchangeRate,
+} from './integrations';
+
+export {
+  netWorthSnapshots,
+  type NetWorthSnapshot,
+  type NewNetWorthSnapshot,
+  type AssetBreakdown,
+} from './integrations';
+
+export {
+  monthlyAnalyticsRollups,
+  type MonthlyAnalyticsRollup,
+  type NewMonthlyAnalyticsRollup,
+} from './integrations';
+
+// User permissions
+export {
+  userAccountPermissions,
+  accountVisibilitySettings,
+  permissionLevels,
+  hasPermissionLevel,
+  type UserAccountPermission,
+  type NewUserAccountPermission,
+  type AccountVisibilitySettings,
+  type NewAccountVisibilitySettings,
+  type PermissionLevel,
+} from './user-account-permission';
+
+// Transactions
+export {
+  transactions,
+  transactionTypes,
+  transactionStatuses,
+  transactionSplits,
+  tags,
+  transactionTags,
+  importBatches,
+  categoryRules,
+  recurringSchedules,
+  type Transaction,
+  type NewTransaction,
+  type TransactionType,
+  type TransactionStatus,
+  type TransactionSplit,
+  type NewTransactionSplit,
+  type Tag,
+  type NewTag,
+  type TransactionTag,
+  type NewTransactionTag,
+  type ImportBatch,
+  type NewImportBatch,
+  type CategoryRule,
+  type NewCategoryRule,
+  type RecurringSchedule,
+  type NewRecurringSchedule,
+} from './transaction';
+
+// Budgets, Goals, Insurance
+export * from './budget';
+export {
+  budgets,
+  budgetPeriods,
+  goals,
+  goalStatuses,
+  goalTypes,
+  goalContributions,
+  insurancePolicies,
+  insuranceTypes,
+  insuranceStatuses,
+  premiumFrequencies,
+  financialProjections,
+  type Budget,
+  type NewBudget,
+  type BudgetPeriod,
+  type Goal,
+  type NewGoal,
+  type GoalStatus,
+  type GoalType,
+  type GoalContribution,
+  type NewGoalContribution,
+  type InsurancePolicy,
+  type NewInsurancePolicy,
+  type InsuranceType,
+  type InsuranceStatus,
+  type PremiumFrequency,
+  type FinancialProjection,
+  type NewFinancialProjection,
+} from './budget';
+
+// Notifications
+export {
+  notifications,
+  notificationTypes,
+  notificationPriorities,
+  defaultNotificationPreferences,
+  type Notification,
+  type NewNotification,
+  type NotificationType,
+  type NotificationPriority,
+} from './notifications';
