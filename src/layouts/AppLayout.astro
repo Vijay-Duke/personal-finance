@@ -41,10 +41,10 @@ const currentPath = Astro.url.pathname;
     />
 
     <!-- Main Content -->
-    <main class="ml-60 min-h-screen">
+    <main class="min-h-screen md:ml-60">
       <!-- Header -->
-      <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card-bg px-6">
-        <h1 class="text-xl font-semibold text-text-primary">{title}</h1>
+      <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card-bg px-4 md:px-6 pt-14 md:pt-0">
+        <h1 class="text-lg md:text-xl font-semibold text-text-primary pl-12 md:pl-0">{title}</h1>
         <div class="flex items-center gap-4">
           <!-- AI Chat Button -->
           <AIChatButton client:load />
@@ -52,7 +52,7 @@ const currentPath = Astro.url.pathname;
       </header>
 
       <!-- Page Content -->
-      <div class="p-6">
+      <div class="p-4 md:p-6">
         <slot />
       </div>
     </main>
