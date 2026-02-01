@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: personal-finance
+    restart: unless-stopped
+    ports:
+      - "4321:4321"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4321
+      - DATABASE_URL=/app/data/finance.db
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:4321}
+      - PUBLIC_BETTER_AUTH_URL=${PUBLIC_BETTER_AUTH_URL:-http://localhost:4321}
+      - PASSKEY_RP_ID=${PASSKEY_RP_ID:-localhost}
+      - PASSKEY_ORIGIN=${PASSKEY_ORIGIN:-http://localhost:4321}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      # Optional AI provider keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4321/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - finance-network
+
+  # Optional: Database backup service
+  backup:
+    image: alpine:latest
+    container_name: personal-finance-backup
+    restart: unless-stopped
+    volumes:
+      - ./data:/data:ro
+      - ./backups:/backups
+    environment:
+      - BACKUP_INTERVAL=${BACKUP_INTERVAL:-24h}
+      - BACKUP_RETENTION=${BACKUP_RETENTION:-7}
+    command: >
+      sh -c '
+        apk add --no-cache sqlite dcron &&
+        mkdir -p /backups &&
+        echo "0 2 * * * sqlite3 /data/finance.db \".backup /backups/finance-$$(date +\%Y\%m\%d-\%H\%M\%S).db\" && find /backups -name \"finance-*.db\" -mtime +$$BACKUP_RETENTION -delete" | crontab - &&
+        crond -f
+      '
+    networks:
+      - finance-network
+    profiles:
+      - backup
+
+networks:
+  finance-network:
+    driver: bridge

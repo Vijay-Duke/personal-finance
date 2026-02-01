@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build output
+dist/
+.astro/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database (don't include local DB in image)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Logs
+*.log
+logs/
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+*.tmp
+
+# Docker files (don't include in context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Misc
+.eslintrc*
+.prettierrc*
+.editorconfig
