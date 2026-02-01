@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/* Kuber-inspired color scheme: dark sidebar, light content */
+@theme {
+  /* Primary colors - emerald/teal accent */
+  --color-primary-50: oklch(0.97 0.02 175);
+  --color-primary-100: oklch(0.94 0.04 175);
+  --color-primary-200: oklch(0.88 0.08 175);
+  --color-primary-300: oklch(0.78 0.13 175);
+  --color-primary-400: oklch(0.66 0.16 175);
+  --color-primary-500: oklch(0.55 0.16 175);
+  --color-primary-600: oklch(0.48 0.14 175);
+  --color-primary-700: oklch(0.42 0.12 175);
+  --color-primary-800: oklch(0.36 0.10 175);
+  --color-primary-900: oklch(0.30 0.08 175);
+  --color-primary-950: oklch(0.20 0.06 175);
+
+  /* Sidebar dark theme colors */
+  --color-sidebar-bg: oklch(0.18 0.01 260);
+  --color-sidebar-hover: oklch(0.22 0.01 260);
+  --color-sidebar-active: oklch(0.25 0.02 260);
+  --color-sidebar-text: oklch(0.85 0.01 260);
+  --color-sidebar-text-muted: oklch(0.60 0.01 260);
+
+  /* Content area - light theme */
+  --color-content-bg: oklch(0.98 0.00 0);
+  --color-card-bg: oklch(1.00 0.00 0);
+  --color-border: oklch(0.92 0.00 0);
+
+  /* Text colors */
+  --color-text-primary: oklch(0.15 0.01 260);
+  --color-text-secondary: oklch(0.45 0.01 260);
+  --color-text-muted: oklch(0.60 0.01 260);
+
+  /* Status colors */
+  --color-success: oklch(0.65 0.18 145);
+  --color-warning: oklch(0.75 0.18 85);
+  --color-danger: oklch(0.55 0.20 25);
+  --color-info: oklch(0.60 0.16 250);
+
+  /* Spacing for layout */
+  --sidebar-width: 240px;
+  --header-height: 64px;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-in: slide-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Base styles */
+html {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-content-bg);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Utility classes for the app */
+.card {
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.sidebar {
+  background-color: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
