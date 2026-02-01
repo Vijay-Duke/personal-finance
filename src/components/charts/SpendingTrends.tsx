@@ -1,7 +1,65 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { cn } from '@/lib/utils';
+
+// Glassmorphism tooltip for bar hover
+function BarTooltip({
+  label,
+  income,
+  expenses,
+  net,
+  position,
+  formatCurrency,
+}: {
+  label: string;
+  income: number;
+  expenses: number;
+  net: number;
+  position: { x: number; y: number };
+  formatCurrency: (v: number) => string;
+}) {
+  return (
+    <div
+      className="absolute z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150"
+      style={{
+        left: position.x,
+        top: position.y,
+        transform: 'translate(-50%, -100%)',
+      }}
+    >
+      <div className="bg-bg-elevated/95 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 shadow-xl min-w-[180px]">
+        <div className="text-sm font-medium text-text-primary mb-2">{label}</div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600" />
+              <span className="text-xs text-text-muted">Income</span>
+            </div>
+            <span className="text-sm font-medium text-success">{formatCurrency(income)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-400 to-rose-600" />
+              <span className="text-xs text-text-muted">Expenses</span>
+            </div>
+            <span className="text-sm font-medium text-danger">{formatCurrency(expenses)}</span>
+          </div>
+          <div className="border-t border-border/50 pt-1.5 flex items-center justify-between">
+            <span className="text-xs text-text-muted">Net</span>
+            <span className={cn(
+              "text-sm font-bold",
+              net >= 0 ? "text-success" : "text-danger"
+            )}>
+              {net >= 0 ? '+' : ''}{formatCurrency(net)}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-bg-elevated/95 border-r border-b border-border/50 transform rotate-45" />
+    </div>
+  );
+}
 
 interface Transaction {
   id: string;
@@ -32,6 +90,9 @@ interface SpendingTrendsProps {
 }
 
 export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
+  const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
   // Calculate date range
   const dateRange = useMemo(() => {
     const end = new Date();
@@ -192,34 +253,81 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
               </div>
 
               {/* Bar Chart */}
-              <div className="space-y-3">
+              <div className="space-y-3 relative">
                 {monthlyTrends.map((month) => (
-                  <div key={month.month} className="space-y-1">
+                  <div
+                    key={month.month}
+                    className={cn(
+                      "space-y-1 cursor-pointer transition-all rounded-lg p-1.5 -mx-1.5",
+                      hoveredMonth === month.month
+                        ? "bg-bg-surface/50"
+                        : "hover:bg-bg-surface/30"
+                    )}
+                    onMouseEnter={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setTooltipPos({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top - 10,
+                      });
+                      setHoveredMonth(month.month);
+                    }}
+                    onMouseLeave={() => setHoveredMonth(null)}
+                  >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">{formatMonth(month.month)}</span>
+                      <span className="font-medium text-text-primary">{formatMonth(month.month)}</span>
                       <span className={cn(
-                        'font-medium',
-                        month.net >= 0 ? 'text-green-600' : 'text-red-600'
+                        'font-semibold',
+                        month.net >= 0 ? 'text-success' : 'text-danger'
                       )}>
                         {month.net >= 0 ? '+' : ''}{formatCurrency(month.net)}
                       </span>
                     </div>
-                    <div className="flex gap-1 h-4">
-                      {/* Income bar */}
+                    <div className="flex gap-1 h-5 rounded-md overflow-hidden bg-bg-surface/50">
+                      {/* Income bar with gradient */}
                       <div
-                        className="bg-green-500 rounded-sm transition-all"
-                        style={{ width: `${(month.income / maxMonthlyValue) * 50}%` }}
-                        title={`Income: ${formatCurrency(month.income)}`}
+                        className={cn(
+                          "bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-l-md transition-all duration-300",
+                          hoveredMonth === month.month && "shadow-glow-success"
+                        )}
+                        style={{
+                          width: `${(month.income / maxMonthlyValue) * 50}%`,
+                          minWidth: month.income > 0 ? '4px' : '0',
+                        }}
                       />
-                      {/* Expense bar */}
+                      {/* Expense bar with gradient */}
                       <div
-                        className="bg-red-500 rounded-sm transition-all"
-                        style={{ width: `${(month.expenses / maxMonthlyValue) * 50}%` }}
-                        title={`Expenses: ${formatCurrency(month.expenses)}`}
+                        className={cn(
+                          "bg-gradient-to-r from-rose-400 to-rose-600 rounded-r-md transition-all duration-300",
+                          hoveredMonth === month.month && "shadow-glow-danger"
+                        )}
+                        style={{
+                          width: `${(month.expenses / maxMonthlyValue) * 50}%`,
+                          minWidth: month.expenses > 0 ? '4px' : '0',
+                        }}
                       />
                     </div>
                   </div>
                 ))}
+
+                {/* Tooltip */}
+                {hoveredMonth && (
+                  <div className="fixed z-50" style={{ left: tooltipPos.x, top: tooltipPos.y }}>
+                    {(() => {
+                      const month = monthlyTrends.find(m => m.month === hoveredMonth);
+                      if (!month) return null;
+                      return (
+                        <BarTooltip
+                          label={formatMonth(month.month)}
+                          income={month.income}
+                          expenses={month.expenses}
+                          net={month.net}
+                          position={{ x: 0, y: 0 }}
+                          formatCurrency={formatCurrency}
+                        />
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
               {/* Legend */}
@@ -250,26 +358,33 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {spendingByCategory.map((category) => (
-                <div key={category.categoryName} className="space-y-1">
+              {spendingByCategory.map((category, index) => (
+                <div
+                  key={category.categoryName}
+                  className="space-y-1.5 group cursor-pointer"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-3 h-3 rounded-full"
+                        className="w-3 h-3 rounded-full transition-transform group-hover:scale-125"
                         style={{ backgroundColor: category.categoryColor }}
                       />
-                      <span className="truncate max-w-[150px]">{category.categoryName}</span>
+                      <span className="truncate max-w-[150px] text-text-primary group-hover:text-primary-400 transition-colors">
+                        {category.categoryName}
+                      </span>
                     </div>
-                    <span className="text-muted-foreground">
-                      {formatCurrency(category.amount)} ({category.percentage.toFixed(1)}%)
+                    <span className="text-text-muted tabular-nums">
+                      <span className="font-medium text-text-secondary">{formatCurrency(category.amount)}</span>
+                      <span className="ml-1.5 text-xs">({category.percentage.toFixed(1)}%)</span>
                     </span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-bg-surface rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all"
+                      className="h-full rounded-full transition-all duration-500 ease-out group-hover:shadow-lg"
                       style={{
                         width: `${category.percentage}%`,
-                        backgroundColor: category.categoryColor,
+                        background: `linear-gradient(90deg, ${category.categoryColor}, ${category.categoryColor}88)`,
                       }}
                     />
                   </div>
@@ -277,9 +392,9 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
               ))}
 
               {/* Total */}
-              <div className="pt-2 border-t flex items-center justify-between text-sm font-medium">
-                <span>Total Expenses</span>
-                <span>{formatCurrency(totalExpenses)}</span>
+              <div className="pt-3 mt-1 border-t border-border flex items-center justify-between text-sm">
+                <span className="text-text-muted">Total Expenses</span>
+                <span className="font-bold text-text-primary text-lg">{formatCurrency(totalExpenses)}</span>
               </div>
             </div>
           )}

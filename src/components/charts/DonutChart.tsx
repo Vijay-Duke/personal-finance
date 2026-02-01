@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface DonutChartSegment {
   label: string;
@@ -12,6 +13,7 @@ interface DonutChartProps {
   strokeWidth?: number;
   centerLabel?: string;
   centerValue?: string;
+  formatValue?: (value: number) => string;
 }
 
 const COLORS = [
@@ -25,13 +27,58 @@ const COLORS = [
   '#ec4899', // pink
 ];
 
+// Glassmorphism tooltip component
+function ChartTooltip({
+  label,
+  value,
+  percentage,
+  color,
+  position,
+}: {
+  label: string;
+  value: string;
+  percentage: string;
+  color: string;
+  position: { x: number; y: number };
+}) {
+  return (
+    <div
+      className="absolute z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150"
+      style={{
+        left: position.x,
+        top: position.y,
+        transform: 'translate(-50%, -100%)',
+      }}
+    >
+      <div className="bg-bg-elevated/90 backdrop-blur-md border border-border/50 rounded-xl px-3 py-2 shadow-lg">
+        <div className="flex items-center gap-2 mb-1">
+          <div
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-sm font-medium text-text-primary">{label}</span>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-lg font-bold text-text-primary">{value}</span>
+          <span className="text-xs text-text-muted">{percentage}</span>
+        </div>
+      </div>
+      {/* Arrow */}
+      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-bg-elevated/90 border-r border-b border-border/50 transform rotate-45" />
+    </div>
+  );
+}
+
 export function DonutChart({
   segments,
   size = 200,
   strokeWidth = 24,
   centerLabel,
   centerValue,
+  formatValue = (v) => v.toLocaleString(),
 }: DonutChartProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const center = size / 2;
@@ -47,6 +94,8 @@ export function DonutChart({
       const percent = total > 0 ? segment.value / total : 0;
       const startPercent = cumulativePercent;
       cumulativePercent += percent;
+      // Calculate center angle for tooltip positioning
+      const midAngle = (startPercent + percent / 2) * 2 * Math.PI - Math.PI / 2;
       return {
         ...segment,
         color: segment.color || COLORS[index % COLORS.length],
@@ -54,9 +103,19 @@ export function DonutChart({
         startPercent,
         strokeDasharray: `${percent * circumference} ${circumference}`,
         strokeDashoffset: -startPercent * circumference,
+        midAngle,
       };
     });
   }, [segments, total, circumference]);
+
+  const handleMouseMove = (_e: React.MouseEvent, index: number, midAngle: number) => {
+    // Position tooltip near the segment
+    const tooltipRadius = radius + strokeWidth;
+    const x = center + Math.cos(midAngle) * tooltipRadius * 0.8;
+    const y = center + Math.sin(midAngle) * tooltipRadius * 0.8;
+    setTooltipPos({ x, y });
+    setHoveredIndex(index);
+  };
 
   if (segments.length === 0 || total === 0) {
     return (
@@ -90,8 +149,29 @@ export function DonutChart({
     );
   }
 
+  const hoveredSegment = hoveredIndex !== null ? segmentsWithAngles[hoveredIndex] : null;
+
   return (
     <div className="relative" style={{ width: size, height: size }}>
+      {/* SVG Gradients */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          {segmentsWithAngles.map((segment, index) => (
+            <linearGradient
+              key={`gradient-${index}`}
+              id={`donut-gradient-${index}`}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" stopColor={segment.color} stopOpacity="1" />
+              <stop offset="100%" stopColor={segment.color} stopOpacity="0.7" />
+            </linearGradient>
+          ))}
+        </defs>
+      </svg>
+
       <svg
         width={size}
         height={size}
@@ -109,35 +189,66 @@ export function DonutChart({
           className="text-content-bg"
         />
         {/* Segments */}
-        {segmentsWithAngles.map((segment) => (
+        {segmentsWithAngles.map((segment, index) => (
           <circle
             key={segment.label}
             cx={center}
             cy={center}
             r={radius}
             fill="none"
-            stroke={segment.color}
-            strokeWidth={strokeWidth}
+            stroke={`url(#donut-gradient-${index})`}
+            strokeWidth={hoveredIndex === index ? strokeWidth + 4 : strokeWidth}
             strokeDasharray={segment.strokeDasharray}
             strokeDashoffset={segment.strokeDashoffset}
             strokeLinecap="butt"
-            className="transition-all duration-500"
+            className={cn(
+              "transition-all duration-300 cursor-pointer",
+              hoveredIndex === index ? "filter drop-shadow-lg" : ""
+            )}
             style={{
               transformOrigin: 'center',
             }}
+            onMouseEnter={(e) => handleMouseMove(e, index, segment.midAngle)}
+            onMouseMove={(e) => handleMouseMove(e, index, segment.midAngle)}
+            onMouseLeave={() => setHoveredIndex(null)}
           />
         ))}
       </svg>
+
       {/* Center text */}
       {(centerLabel || centerValue) && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {centerValue && (
-            <span className="text-xl font-bold text-text-primary">{centerValue}</span>
-          )}
-          {centerLabel && (
-            <span className="text-xs text-text-muted">{centerLabel}</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          {hoveredSegment ? (
+            <>
+              <span className="text-xl font-bold text-text-primary transition-all">
+                {(hoveredSegment.percent * 100).toFixed(1)}%
+              </span>
+              <span className="text-xs text-text-muted truncate max-w-[80%] text-center">
+                {hoveredSegment.label}
+              </span>
+            </>
+          ) : (
+            <>
+              {centerValue && (
+                <span className="text-xl font-bold text-text-primary">{centerValue}</span>
+              )}
+              {centerLabel && (
+                <span className="text-xs text-text-muted">{centerLabel}</span>
+              )}
+            </>
           )}
         </div>
+      )}
+
+      {/* Tooltip */}
+      {hoveredSegment && (
+        <ChartTooltip
+          label={hoveredSegment.label}
+          value={formatValue(hoveredSegment.value)}
+          percentage={`${(hoveredSegment.percent * 100).toFixed(1)}%`}
+          color={hoveredSegment.color}
+          position={tooltipPos}
+        />
       )}
     </div>
   );

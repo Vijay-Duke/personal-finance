@@ -1,11 +1,13 @@
 ---
 import '@/styles/globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { AIChatButton } from '@/components/ai/AIChatButton';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { CommandPalette } from '@/components/CommandPalette';
 import { QuickAddFAB } from '@/components/QuickAddFAB';
 import { OfflineIndicator } from '@/components/ui';
+import { ToastOutlet } from '@/components/ui/ToastOutlet';
 import { getSession } from '@/lib/auth/session';
 
 interface Props {
@@ -66,7 +68,7 @@ const currentPath = Astro.url.pathname;
       </header>
 
       <!-- Page Content -->
-      <div class="p-4 md:p-6">
+      <div class="p-4 md:p-6 pb-24 lg:pb-6">
         <slot />
       </div>
     </main>
@@ -74,10 +76,18 @@ const currentPath = Astro.url.pathname;
     <!-- Offline Indicator -->
     <OfflineIndicator client:load />
 
+    <!-- Toast Notifications -->
+    <ToastOutlet client:load />
+
     <!-- Command Palette -->
     <CommandPalette client:load />
 
-    <!-- Quick Add FAB -->
-    <QuickAddFAB client:load />
+    <!-- Quick Add FAB (Desktop) -->
+    <div class="hidden lg:block">
+      <QuickAddFAB client:load />
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <BottomNav client:load currentPath={currentPath} />
   </body>
 </html>
