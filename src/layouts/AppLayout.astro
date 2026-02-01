@@ -2,6 +2,7 @@
 import '@/styles/globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AIChatButton } from '@/components/ai/AIChatButton';
+import { OfflineIndicator } from '@/components/ui';
 import { getSession } from '@/lib/auth/session';
 
 interface Props {
@@ -63,5 +64,8 @@ const currentPath = Astro.url.pathname;
         <slot />
       </div>
     </main>
+
+    <!-- Offline Indicator -->
+    <OfflineIndicator client:load />
   </body>
 </html>

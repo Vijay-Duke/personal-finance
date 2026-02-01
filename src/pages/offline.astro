@@ -1,0 +1,125 @@
+---
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { Button } from '@/components/ui';
+---
+
+<AuthLayout title="Offline">
+  <div class="text-center py-8">
+    <!-- Offline Icon -->
+    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-surface-100">
+      <svg
+        class="h-10 w-10 text-text-muted"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 3l18 18"
+        />
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold text-text-primary mb-2">
+      You're offline
+    </h2>
+
+    <p class="text-text-muted mb-6 max-w-sm mx-auto">
+      It looks like you've lost your internet connection. Some features may be unavailable until you reconnect.
+    </p>
+
+    <div class="space-y-3">
+      <Button
+        onclick="window.location.reload()"
+        className="w-full"
+      >
+        <svg
+          class="h-4 w-4 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+        Try Again
+      </Button>
+
+      <a
+        href="/"
+        class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+      >
+        <svg
+          class="h-4 w-4 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+        Go to Dashboard
+      </a>
+    </div>
+
+    <!-- Cached Content Info -->
+    <div class="mt-8 p-4 bg-surface-50 rounded-lg border border-border">
+      <h3 class="text-sm font-medium text-text-primary mb-2 flex items-center gap-2">
+        <svg
+          class="h-4 w-4 text-success"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        Available Offline
+      </h3>
+      <ul class="text-sm text-text-muted space-y-1 text-left">
+        <li>Previously viewed pages</li>
+        <li>Static assets and styles</li>
+        <li>App icons and fonts</li>
+      </ul>
+    </div>
+  </div>
+</AuthLayout>
+
+<script>
+  // Check if we're back online and reload automatically
+  window.addEventListener('online', () => {
+    window.location.reload();
+  });
+
+  // Update the UI when connection status changes
+  function updateOnlineStatus() {
+    if (navigator.onLine) {
+      // We're back online, reload the page
+      window.location.reload();
+    }
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+</script>

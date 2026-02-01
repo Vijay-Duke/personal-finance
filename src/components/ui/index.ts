@@ -14,3 +14,9 @@ export {
   type ResponsiveTableProps,
   type SimpleTableProps,
 } from "./ResponsiveTable";
+export {
+  OfflineIndicator,
+  useOnlineStatus,
+  useSyncWhenOnline,
+  type OfflineIndicatorProps,
+} from "./OfflineIndicator";
