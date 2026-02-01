@@ -13,8 +13,8 @@ import { QueryProvider } from '../../components/providers/QueryProvider';
       </p>
     </div>
 
-    <QueryProvider client:load>
-      <SuperannuationList client:load />
+    <QueryProvider client:only="react">
+      <SuperannuationList />
     </QueryProvider>
   </div>
 </AppLayout>

@@ -6,8 +6,8 @@ import { QueryProvider } from '../../components/providers/QueryProvider';
 
 <AppLayout title="Category Rules - Settings">
   <div class="container mx-auto py-8 max-w-4xl">
-    <QueryProvider client:load>
-      <CategoryRulesManager client:load />
+    <QueryProvider client:only="react">
+      <CategoryRulesManager />
     </QueryProvider>
   </div>
 </AppLayout>

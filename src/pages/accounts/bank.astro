@@ -13,8 +13,8 @@ import { QueryProvider } from '../../components/providers/QueryProvider';
       </p>
     </div>
 
-    <QueryProvider client:load>
-      <BankAccountsList client:load />
+    <QueryProvider client:only="react">
+      <BankAccountsList />
     </QueryProvider>
   </div>
 </AppLayout>

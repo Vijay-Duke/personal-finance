@@ -14,10 +14,10 @@ import { QueryProvider } from '../components/providers/QueryProvider';
       </p>
     </div>
 
-    <QueryProvider client:load>
+    <QueryProvider client:only="react">
       <div class="space-y-6">
-        <AccountSettings client:load />
-        <FinancialProfileSettings client:load />
+        <AccountSettings />
+        <FinancialProfileSettings />
       </div>
     </QueryProvider>
   </div>

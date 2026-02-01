@@ -21,6 +21,7 @@ export const users = sqliteTable('users', {
   emailVerified: integer('email_verified', { mode: 'boolean' }).notNull().default(false),
   name: text('name'),
   image: text('image'),
+  twoFactorEnabled: integer('two_factor_enabled', { mode: 'boolean' }).notNull().default(false),
 
   // Household relationship
   householdId: text('household_id').references(() => households.id, { onDelete: 'set null' }),

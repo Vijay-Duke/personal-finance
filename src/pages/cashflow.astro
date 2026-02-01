@@ -14,9 +14,9 @@ import { QueryProvider } from '../components/providers/QueryProvider';
       </p>
     </div>
 
-    <QueryProvider client:load>
-      <SpendingChart client:load months={6} />
-      <TransactionsList client:load />
+    <QueryProvider client:only="react">
+      <SpendingChart months={6} />
+      <TransactionsList />
     </QueryProvider>
   </div>
 </AppLayout>
