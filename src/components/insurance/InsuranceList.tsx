@@ -4,7 +4,6 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { cn } from '@/lib/utils';
 import {
   Plus,
   Trash2,
@@ -210,7 +209,7 @@ export function InsuranceList() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingId) {
       updateMutation.mutate({ id: editingId, data: formData });

@@ -28,10 +28,15 @@ export const auth = betterAuth({
   // Email/password configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Enable for production
+    requireEmailVerification: process.env.NODE_ENV === 'production',
     sendResetPassword: async ({ user, url }) => {
-      // TODO: Implement email sending
-      console.log(`Password reset link for ${user.email}: ${url}`);
+      // TODO: Implement email sending service (SendGrid, Resend, etc.)
+      // In development, log the URL for testing
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DEV] Password reset link for ${user.email}: ${url}`);
+      }
+      // In production, this should send an actual email
+      // For now, silently succeed - implement email service before enabling email verification
     },
   },
 

@@ -16,7 +16,6 @@ import {
   Tag as TagIcon,
   Trash2,
   X,
-  Download,
 } from 'lucide-react';
 
 interface TransactionTag {
@@ -223,7 +222,7 @@ export function TransactionsList() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     createMutation.mutate(formData);
   };

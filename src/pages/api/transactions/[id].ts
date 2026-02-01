@@ -8,7 +8,7 @@ import {
   categories,
   tags,
 } from '../../../lib/db/schema';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { getSession } from '../../../lib/auth/session';
 import { json, error, noContent, unauthorized, notFound } from '../../../lib/api/response';
 
@@ -165,77 +165,85 @@ export const PUT: APIRoute = async (context) => {
 
     const balanceAdjustment = newBalanceEffect - oldBalanceEffect;
 
-    // Update transaction
-    const [updated] = await db
-      .update(transactions)
-      .set({
-        type: body.type || existing.type,
-        status: body.status || existing.status,
-        amount: newAmount,
-        currency: body.currency || existing.currency,
-        date: body.date ? new Date(body.date) : existing.date,
-        description: body.description !== undefined ? body.description?.trim() : existing.description,
-        merchant: body.merchant !== undefined ? body.merchant?.trim() : existing.merchant,
-        merchantCategory: body.merchantCategory !== undefined ? body.merchantCategory : existing.merchantCategory,
-        categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
-        notes: body.notes !== undefined ? body.notes?.trim() : existing.notes,
-        reference: body.reference !== undefined ? body.reference?.trim() : existing.reference,
-        location: body.location !== undefined ? body.location : existing.location,
-        latitude: body.latitude !== undefined ? body.latitude : existing.latitude,
-        longitude: body.longitude !== undefined ? body.longitude : existing.longitude,
-        updatedBy: session.user.id,
-        updatedAt: new Date(),
-      })
-      .where(eq(transactions.id, id))
-      .returning();
+    // Store userId before transaction for TypeScript narrowing
+    const userId = session.user.id;
 
-    // Adjust account balance if needed
-    if (balanceAdjustment !== 0) {
-      await db
-        .update(accounts)
+    // Execute all updates atomically
+    const updated = await db.transaction(async (tx) => {
+      // Update transaction
+      const [updatedTx] = await tx
+        .update(transactions)
         .set({
-          currentBalance: sql`${accounts.currentBalance} + ${balanceAdjustment}`,
+          type: body.type || existing.type,
+          status: body.status || existing.status,
+          amount: newAmount,
+          currency: body.currency || existing.currency,
+          date: body.date ? new Date(body.date) : existing.date,
+          description: body.description !== undefined ? body.description?.trim() : existing.description,
+          merchant: body.merchant !== undefined ? body.merchant?.trim() : existing.merchant,
+          merchantCategory: body.merchantCategory !== undefined ? body.merchantCategory : existing.merchantCategory,
+          categoryId: body.categoryId !== undefined ? body.categoryId : existing.categoryId,
+          notes: body.notes !== undefined ? body.notes?.trim() : existing.notes,
+          reference: body.reference !== undefined ? body.reference?.trim() : existing.reference,
+          location: body.location !== undefined ? body.location : existing.location,
+          latitude: body.latitude !== undefined ? body.latitude : existing.latitude,
+          longitude: body.longitude !== undefined ? body.longitude : existing.longitude,
+          updatedBy: userId,
           updatedAt: new Date(),
         })
-        .where(eq(accounts.id, existing.accountId));
-    }
+        .where(eq(transactions.id, id))
+        .returning();
 
-    // Update splits if provided
-    if (body.splits !== undefined) {
-      // Delete existing splits
-      await db
-        .delete(transactionSplits)
-        .where(eq(transactionSplits.transactionId, id));
-
-      // Insert new splits
-      if (Array.isArray(body.splits) && body.splits.length > 0) {
-        const splitData = body.splits.map((split: any, index: number) => ({
-          transactionId: id,
-          amount: Math.abs(split.amount),
-          categoryId: split.categoryId,
-          description: split.description?.trim(),
-          sortOrder: index,
-        }));
-        await db.insert(transactionSplits).values(splitData);
+      // Adjust account balance if needed
+      if (balanceAdjustment !== 0) {
+        await tx
+          .update(accounts)
+          .set({
+            currentBalance: sql`${accounts.currentBalance} + ${balanceAdjustment}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(accounts.id, existing.accountId));
       }
-    }
 
-    // Update tags if provided
-    if (body.tagIds !== undefined) {
-      // Delete existing tags
-      await db
-        .delete(transactionTags)
-        .where(eq(transactionTags.transactionId, id));
+      // Update splits if provided
+      if (body.splits !== undefined) {
+        // Delete existing splits
+        await tx
+          .delete(transactionSplits)
+          .where(eq(transactionSplits.transactionId, id));
 
-      // Insert new tags
-      if (Array.isArray(body.tagIds) && body.tagIds.length > 0) {
-        const tagData = body.tagIds.map((tagId: string) => ({
-          transactionId: id,
-          tagId,
-        }));
-        await db.insert(transactionTags).values(tagData);
+        // Insert new splits
+        if (Array.isArray(body.splits) && body.splits.length > 0) {
+          const splitData = body.splits.map((split: any, index: number) => ({
+            transactionId: id,
+            amount: Math.abs(split.amount),
+            categoryId: split.categoryId,
+            description: split.description?.trim(),
+            sortOrder: index,
+          }));
+          await tx.insert(transactionSplits).values(splitData);
+        }
       }
-    }
+
+      // Update tags if provided
+      if (body.tagIds !== undefined) {
+        // Delete existing tags
+        await tx
+          .delete(transactionTags)
+          .where(eq(transactionTags.transactionId, id));
+
+        // Insert new tags
+        if (Array.isArray(body.tagIds) && body.tagIds.length > 0) {
+          const tagData = body.tagIds.map((tagId: string) => ({
+            transactionId: id,
+            tagId,
+          }));
+          await tx.insert(transactionTags).values(tagData);
+        }
+      }
+
+      return updatedTx;
+    });
 
     return json(updated);
   } catch (err) {
@@ -282,40 +290,43 @@ export const DELETE: APIRoute = async (context) => {
         ? existing.amount
         : existing.amount; // transfer - add back to source account
 
-    // Delete the transaction (splits and tags cascade)
-    await db.delete(transactions).where(eq(transactions.id, id));
+    // Execute all deletes and balance updates atomically
+    await db.transaction(async (tx) => {
+      // Delete the transaction (splits and tags cascade)
+      await tx.delete(transactions).where(eq(transactions.id, id));
 
-    // Revert account balance
-    if (balanceReversal !== 0) {
-      await db
-        .update(accounts)
-        .set({
-          currentBalance: sql`${accounts.currentBalance} + ${balanceReversal}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(accounts.id, existing.accountId));
-    }
-
-    // If it's a transfer, also delete/update the linked transaction
-    if (existing.linkedTransactionId) {
-      const [linkedTx] = await db
-        .select()
-        .from(transactions)
-        .where(eq(transactions.id, existing.linkedTransactionId));
-
-      if (linkedTx) {
-        await db.delete(transactions).where(eq(transactions.id, linkedTx.id));
-
-        // Revert destination account balance
-        await db
+      // Revert account balance
+      if (balanceReversal !== 0) {
+        await tx
           .update(accounts)
           .set({
-            currentBalance: sql`${accounts.currentBalance} - ${linkedTx.amount}`,
+            currentBalance: sql`${accounts.currentBalance} + ${balanceReversal}`,
             updatedAt: new Date(),
           })
-          .where(eq(accounts.id, linkedTx.accountId));
+          .where(eq(accounts.id, existing.accountId));
       }
-    }
+
+      // If it's a transfer, also delete/update the linked transaction
+      if (existing.linkedTransactionId) {
+        const [linkedTx] = await tx
+          .select()
+          .from(transactions)
+          .where(eq(transactions.id, existing.linkedTransactionId));
+
+        if (linkedTx) {
+          await tx.delete(transactions).where(eq(transactions.id, linkedTx.id));
+
+          // Revert destination account balance
+          await tx
+            .update(accounts)
+            .set({
+              currentBalance: sql`${accounts.currentBalance} - ${linkedTx.amount}`,
+              updatedAt: new Date(),
+            })
+            .where(eq(accounts.id, linkedTx.accountId));
+        }
+      }
+    });
 
     return noContent();
   } catch (err) {

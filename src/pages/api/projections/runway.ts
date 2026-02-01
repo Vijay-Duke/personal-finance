@@ -112,8 +112,7 @@ export const GET: APIRoute = async (context) => {
       ? (netMonthlySavings / averageMonthlyIncome) * 100
       : 0;
 
-    // Project when liquid assets would reach zero (burn rate) or a target
-    const monthsToZero = runwayMonths;
+
 
     // Project when liquid assets would reach 6 months of expenses (emergency fund target)
     const emergencyFundTarget = averageMonthlyExpenses * 6;

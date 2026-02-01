@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,6 @@ import {
   Trash2,
   Edit2,
   AlertTriangle,
-  TrendingUp,
   TrendingDown,
 } from 'lucide-react';
 
@@ -200,7 +199,7 @@ export function BudgetsList() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingId) {
       updateMutation.mutate({ id: editingId, data: formData });

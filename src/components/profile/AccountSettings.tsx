@@ -136,7 +136,7 @@ export function AccountSettings() {
     setErrorMessage(null);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (passwordData.newPassword.length < 8) {
       setErrorMessage('Password must be at least 8 characters');

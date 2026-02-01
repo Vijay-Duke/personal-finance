@@ -109,7 +109,7 @@ export function SuperannuationList() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     createMutation.mutate(formData);
   };

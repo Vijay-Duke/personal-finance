@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
-import { sql, relations } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { households } from './household';
 import { accounts } from './accounts/account';
 import { categories } from './category';

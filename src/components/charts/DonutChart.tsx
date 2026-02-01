@@ -109,7 +109,7 @@ export function DonutChart({
           className="text-content-bg"
         />
         {/* Segments */}
-        {segmentsWithAngles.map((segment, index) => (
+        {segmentsWithAngles.map((segment) => (
           <circle
             key={segment.label}
             cx={center}

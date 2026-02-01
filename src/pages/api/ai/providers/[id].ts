@@ -4,7 +4,7 @@ import { aiProviders, type AIProviderType } from '../../../../lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getSession } from '../../../../lib/auth/session';
 import { json, error, noContent, notFound, unauthorized, validationError } from '../../../../lib/api/response';
-import { encrypt, decrypt } from '../../../../lib/ai/encryption';
+import { encrypt } from '../../../../lib/ai/encryption';
 
 /**
  * GET /api/ai/providers/:id

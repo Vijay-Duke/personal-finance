@@ -71,10 +71,12 @@ export const GET: APIRoute = async (context) => {
       conditions.push(lte(transactions.date, new Date(endDate)));
     }
     if (search) {
+      // Escape special LIKE characters to prevent pattern manipulation
+      const escapedSearch = search.replace(/[%_\\]/g, '\\$&');
       conditions.push(
         or(
-          like(transactions.description, `%${search}%`),
-          like(transactions.merchant, `%${search}%`)
+          like(transactions.description, `%${escapedSearch}%`),
+          like(transactions.merchant, `%${escapedSearch}%`)
         )!
       );
     }
@@ -137,15 +139,15 @@ export const GET: APIRoute = async (context) => {
     const transactionIds = filteredResults.map(tx => tx.id);
     const allTags = transactionIds.length > 0
       ? await db
-          .select({
-            transactionId: transactionTags.transactionId,
-            tagId: tags.id,
-            tagName: tags.name,
-            tagColor: tags.color,
-          })
-          .from(transactionTags)
-          .innerJoin(tags, eq(transactionTags.tagId, tags.id))
-          .where(inArray(transactionTags.transactionId, transactionIds))
+        .select({
+          transactionId: transactionTags.transactionId,
+          tagId: tags.id,
+          tagName: tags.name,
+          tagColor: tags.color,
+        })
+        .from(transactionTags)
+        .innerJoin(tags, eq(transactionTags.tagId, tags.id))
+        .where(inArray(transactionTags.transactionId, transactionIds))
       : [];
 
     // Group tags by transaction
@@ -203,6 +205,9 @@ export const POST: APIRoute = async (context) => {
     if (body.amount === undefined || body.amount === null) {
       return error('Amount is required');
     }
+    if (typeof body.amount !== 'number' || !isFinite(body.amount) || body.amount < 0) {
+      return error('Amount must be a valid non-negative number');
+    }
     if (!body.date) {
       return error('Date is required');
     }
@@ -239,97 +244,106 @@ export const POST: APIRoute = async (context) => {
       }
     }
 
-    // Create transaction
-    const transactionData: NewTransaction = {
-      householdId: session.user.householdId,
-      accountId: body.accountId,
-      transferAccountId: body.type === 'transfer' ? body.transferAccountId : undefined,
-      type: body.type,
-      status: body.status || 'cleared',
-      amount: Math.abs(body.amount),
-      currency: body.currency || account.currency || 'USD',
-      date: new Date(body.date),
-      description: body.description?.trim(),
-      merchant: body.merchant?.trim(),
-      merchantCategory: body.merchantCategory,
-      categoryId: body.categoryId,
-      notes: body.notes?.trim(),
-      reference: body.reference?.trim(),
-      location: body.location,
-      latitude: body.latitude,
-      longitude: body.longitude,
-      createdBy: session.user.id,
-      updatedBy: session.user.id,
-    };
+    // Store values before transaction to satisfy TypeScript narrowing
+    const householdId = session.user.householdId;
+    const userId = session.user.id;
 
-    const [newTransaction] = await db.insert(transactions).values(transactionData).returning();
+    // Execute transaction creation and balance update atomically
+    const newTransaction = await db.transaction(async (tx) => {
+      // Create transaction
+      const transactionData: NewTransaction = {
+        householdId,
+        accountId: body.accountId,
+        transferAccountId: body.type === 'transfer' ? (body.transferAccountId || null) : null,
+        type: body.type,
+        status: body.status || 'cleared',
+        amount: Math.abs(body.amount),
+        currency: body.currency || account.currency || 'USD',
+        date: new Date(body.date),
+        description: body.description?.trim(),
+        merchant: body.merchant?.trim(),
+        merchantCategory: body.merchantCategory,
+        categoryId: body.categoryId,
+        notes: body.notes?.trim(),
+        reference: body.reference?.trim(),
+        location: body.location,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        createdBy: userId,
+        updatedBy: userId,
+      };
 
-    // Handle splits if provided
-    if (body.splits && Array.isArray(body.splits) && body.splits.length > 0) {
-      const splitData: NewTransactionSplit[] = body.splits.map((split: any, index: number) => ({
-        transactionId: newTransaction.id,
-        amount: Math.abs(split.amount),
-        categoryId: split.categoryId,
-        description: split.description?.trim(),
-        sortOrder: index,
-      }));
-      await db.insert(transactionSplits).values(splitData);
-    }
+      const [newTransaction] = await tx.insert(transactions).values(transactionData).returning();
 
-    // Handle tags if provided
-    if (body.tagIds && Array.isArray(body.tagIds) && body.tagIds.length > 0) {
-      const tagData = body.tagIds.map((tagId: string) => ({
-        transactionId: newTransaction.id,
-        tagId,
-      }));
-      await db.insert(transactionTags).values(tagData);
-    }
+      // Handle splits if provided
+      if (body.splits && Array.isArray(body.splits) && body.splits.length > 0) {
+        const splitData: NewTransactionSplit[] = body.splits.map((split: any, index: number) => ({
+          transactionId: newTransaction.id,
+          amount: Math.abs(split.amount),
+          categoryId: split.categoryId,
+          description: split.description?.trim(),
+          sortOrder: index,
+        }));
+        await tx.insert(transactionSplits).values(splitData);
+      }
 
-    // Update account balance
-    const balanceChange = body.type === 'income'
-      ? newTransaction.amount
-      : body.type === 'expense'
-        ? -newTransaction.amount
-        : body.type === 'transfer'
-          ? -newTransaction.amount // Decrease source account
-          : 0;
+      // Handle tags if provided
+      if (body.tagIds && Array.isArray(body.tagIds) && body.tagIds.length > 0) {
+        const tagData = body.tagIds.map((tagId: string) => ({
+          transactionId: newTransaction.id,
+          tagId,
+        }));
+        await tx.insert(transactionTags).values(tagData);
+      }
 
-    if (balanceChange !== 0) {
-      await db
-        .update(accounts)
-        .set({
-          currentBalance: sql`${accounts.currentBalance} + ${balanceChange}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(accounts.id, body.accountId));
-    }
+      // Update account balance
+      const balanceChange = body.type === 'income'
+        ? newTransaction.amount
+        : body.type === 'expense'
+          ? -newTransaction.amount
+          : body.type === 'transfer'
+            ? -newTransaction.amount // Decrease source account
+            : 0;
 
-    // For transfers, create the corresponding transaction in destination account
-    if (body.type === 'transfer' && body.transferAccountId) {
-      const [linkedTransaction] = await db.insert(transactions).values({
-        ...transactionData,
-        accountId: body.transferAccountId,
-        transferAccountId: body.accountId,
-        linkedTransactionId: newTransaction.id,
-        type: 'transfer',
-        amount: newTransaction.amount,
-      }).returning();
+      if (balanceChange !== 0) {
+        await tx
+          .update(accounts)
+          .set({
+            currentBalance: sql`${accounts.currentBalance} + ${balanceChange}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(accounts.id, body.accountId));
+      }
 
-      // Update the original transaction with the linked ID
-      await db
-        .update(transactions)
-        .set({ linkedTransactionId: linkedTransaction.id })
-        .where(eq(transactions.id, newTransaction.id));
+      // For transfers, create the corresponding transaction in destination account
+      if (body.type === 'transfer' && body.transferAccountId) {
+        const [linkedTransaction] = await tx.insert(transactions).values({
+          ...transactionData,
+          accountId: body.transferAccountId,
+          transferAccountId: body.accountId,
+          linkedTransactionId: newTransaction.id,
+          type: 'transfer',
+          amount: newTransaction.amount,
+        }).returning();
 
-      // Increase destination account balance
-      await db
-        .update(accounts)
-        .set({
-          currentBalance: sql`${accounts.currentBalance} + ${newTransaction.amount}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(accounts.id, body.transferAccountId));
-    }
+        // Update the original transaction with the linked ID
+        await tx
+          .update(transactions)
+          .set({ linkedTransactionId: linkedTransaction.id })
+          .where(eq(transactions.id, newTransaction.id));
+
+        // Increase destination account balance
+        await tx
+          .update(accounts)
+          .set({
+            currentBalance: sql`${accounts.currentBalance} + ${newTransaction.amount}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(accounts.id, body.transferAccountId));
+      }
+
+      return newTransaction;
+    });
 
     return created(newTransaction);
   } catch (err) {

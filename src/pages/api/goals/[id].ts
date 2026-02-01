@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { db } from '../../../lib/db';
 import { goals, goalContributions } from '../../../lib/db/schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { getSession } from '../../../lib/auth/session';
 import { json, error, noContent, unauthorized, notFound } from '../../../lib/api/response';
 

@@ -9,7 +9,6 @@ import {
   TrendingUp,
   DollarSign,
   Calendar,
-  Globe,
   PiggyBank,
   Check,
   AlertCircle,

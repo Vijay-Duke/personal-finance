@@ -3,6 +3,8 @@ import '@/styles/globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AIChatButton } from '@/components/ai/AIChatButton';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { CommandPalette } from '@/components/CommandPalette';
+import { QuickAddFAB } from '@/components/QuickAddFAB';
 import { OfflineIndicator } from '@/components/ui';
 import { getSession } from '@/lib/auth/session';
 
@@ -71,5 +73,11 @@ const currentPath = Astro.url.pathname;
 
     <!-- Offline Indicator -->
     <OfflineIndicator client:load />
+
+    <!-- Command Palette -->
+    <CommandPalette client:load />
+
+    <!-- Quick Add FAB -->
+    <QuickAddFAB client:load />
   </body>
 </html>

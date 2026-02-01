@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DataExport } from './DataExport';
 import { CategoryRulesManager } from './CategoryRulesManager';
 import { AIProviderSettings } from '../ai/AIProviderSettings';
+import { ApiKeysSettings } from './ApiKeysSettings';
 import {
   Download,
   Tags,
@@ -11,10 +12,11 @@ import {
   Shield,
   Database,
   ChevronRight,
+  Key,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type SettingsSection = 'export' | 'categories' | 'ai' | 'notifications' | 'appearance' | 'security' | 'data';
+type SettingsSection = 'export' | 'categories' | 'ai' | 'api-keys' | 'notifications' | 'appearance' | 'security' | 'data';
 
 interface SettingsItem {
   id: SettingsSection;
@@ -45,6 +47,13 @@ const settingsItems: SettingsItem[] = [
     icon: <Bot className="h-5 w-5" />,
     description: 'Configure AI integration settings',
     component: <AIProviderSettings />,
+  },
+  {
+    id: 'api-keys',
+    label: 'API Keys',
+    icon: <Key className="h-5 w-5" />,
+    description: 'Manage programmatic API access',
+    component: <ApiKeysSettings />,
   },
   {
     id: 'notifications',

@@ -120,7 +120,7 @@ export function PersonalAssetsList() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     createMutation.mutate(formData);
   };

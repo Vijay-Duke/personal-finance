@@ -208,3 +208,12 @@ export {
   type NotificationType,
   type NotificationPriority,
 } from './notifications';
+
+// API Keys (programmatic access)
+export {
+  apiKeys,
+  type ApiKey,
+  type NewApiKey,
+  type ApiKeyScope,
+  type ApiKeySource,
+} from './api-key';

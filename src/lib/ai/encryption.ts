@@ -1,9 +1,15 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-
-if (!ENCRYPTION_KEY) {
-  throw new Error('ENCRYPTION_KEY environment variable is required');
+/**
+ * Get the encryption key, throwing only when actually needed.
+ * This allows the app to run without ENCRYPTION_KEY if encryption features aren't used.
+ */
+function getEncryptionKey(): string {
+  const key = process.env.ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error('ENCRYPTION_KEY environment variable is required for encryption features');
+  }
+  return key;
 }
 
 const ALGORITHM = 'aes-256-gcm';
@@ -29,7 +35,7 @@ export function encrypt(text: string): string {
 
   const salt = randomBytes(SALT_LENGTH);
   const iv = randomBytes(IV_LENGTH);
-  const key = deriveKey(ENCRYPTION_KEY!, salt);
+  const key = deriveKey(getEncryptionKey(), salt);
 
   const cipher = createCipheriv(ALGORITHM, key, iv);
 
@@ -77,7 +83,7 @@ export function decrypt(encryptedData: string): string {
     throw new Error('Invalid auth tag length');
   }
 
-  const key = deriveKey(ENCRYPTION_KEY!, salt);
+  const key = deriveKey(getEncryptionKey(), salt);
 
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);

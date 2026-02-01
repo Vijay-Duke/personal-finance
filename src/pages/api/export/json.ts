@@ -14,7 +14,7 @@ import {
 } from '../../../lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { getSession } from '../../../lib/auth/session';
-import { json, error, unauthorized } from '../../../lib/api/response';
+import { error, unauthorized } from '../../../lib/api/response';
 
 /**
  * GET /api/export/json

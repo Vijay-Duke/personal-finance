@@ -7,10 +7,10 @@ import {
   categoryRules,
   type NewTransaction,
 } from '../../../lib/db/schema';
-import { eq, and, like, sql } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { getSession } from '../../../lib/auth/session';
 import { json, error, created, unauthorized } from '../../../lib/api/response';
-import { parseCSV, type ParsedTransaction } from '../../../lib/import/csv-parser';
+import { parseCSV } from '../../../lib/import/csv-parser';
 
 /**
  * POST /api/import/csv

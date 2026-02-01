@@ -84,12 +84,15 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     setInput(e.target.value);
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage: ChatMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    // Capture current messages to avoid race condition with state updates
+    const currentMessages = [...messages, userMessage];
+
+    setMessages(currentMessages);
     setInput('');
     setIsLoading(true);
     setError(null);
@@ -99,7 +102,7 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
+          messages: currentMessages.map(m => ({
             role: m.role,
             content: m.content,
           })),

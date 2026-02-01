@@ -9,10 +9,7 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Check,
-  X,
   Zap,
-  ArrowUpDown,
   ToggleLeft,
   ToggleRight,
 } from 'lucide-react';
@@ -209,7 +206,7 @@ export function CategoryRulesManager() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingId) {
       updateMutation.mutate({ id: editingId, data: formData });

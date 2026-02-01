@@ -245,7 +245,7 @@ export function RecurringTransactionsList() {
     setShowForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingSchedule) {
       updateMutation.mutate({

@@ -8,7 +8,6 @@
 import {
   FrankfurterClient,
   getFrankfurterClient,
-  frankfurter,
   FrankfurterError,
 } from './frankfurter';
 
