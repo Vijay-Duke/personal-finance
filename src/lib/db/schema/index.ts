@@ -73,3 +73,10 @@ export {
   type NewAIProvider,
   type AIProviderType,
 } from './ai-provider';
+
+export {
+  aiConversations,
+  type AIConversation,
+  type NewAIConversation,
+  type AIMessage,
+} from './ai-conversation';
