@@ -2,6 +2,7 @@
 import '@/styles/globals.css';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AIChatButton } from '@/components/ai/AIChatButton';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OfflineIndicator } from '@/components/ui';
 import { getSession } from '@/lib/auth/session';
 
@@ -54,6 +55,9 @@ const currentPath = Astro.url.pathname;
       <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card-bg px-4 md:px-6 pt-14 md:pt-0">
         <h1 class="text-lg md:text-xl font-semibold text-text-primary pl-12 md:pl-0">{title}</h1>
         <div class="flex items-center gap-4">
+          <!-- Notification Bell -->
+          <NotificationBell client:load />
+
           <!-- AI Chat Button -->
           <AIChatButton client:load />
         </div>
