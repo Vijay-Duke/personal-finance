@@ -111,8 +111,8 @@ export const GET: APIRoute = async (context) => {
             tagName: tags.name,
           })
           .from(transactionTags)
-          .leftJoin(tags, eq(transactionTags.tagId, tags.id))
-          .where(eq(transactionTags.householdId, householdId));
+          .innerJoin(tags, eq(transactionTags.tagId, tags.id))
+          .where(eq(tags.householdId, householdId));
 
         const tagsByTransaction = allTransactionTags.reduce((acc, tt) => {
           if (!acc[tt.transactionId]) acc[tt.transactionId] = [];
@@ -163,12 +163,12 @@ export const GET: APIRoute = async (context) => {
           id: accounts.id,
           name: accounts.name,
           type: accounts.type,
-          subtype: accounts.subtype,
           currency: accounts.currency,
           currentBalance: accounts.currentBalance,
-          institution: accounts.institution,
-          accountNumber: accounts.accountNumber,
           isActive: accounts.isActive,
+          isLiquid: accounts.isLiquid,
+          includeInNetWorth: accounts.includeInNetWorth,
+          notes: accounts.notes,
           createdAt: accounts.createdAt,
         })
         .from(accounts)
@@ -177,12 +177,12 @@ export const GET: APIRoute = async (context) => {
       const csvData = accountsData.map(a => ({
         Name: a.name,
         Type: a.type,
-        Subtype: a.subtype || '',
-        Institution: a.institution || '',
-        'Account Number': a.accountNumber || '',
         'Current Balance': a.currentBalance,
         Currency: a.currency,
         Active: a.isActive ? 'Yes' : 'No',
+        Liquid: a.isLiquid ? 'Yes' : 'No',
+        'Include in Net Worth': a.includeInNetWorth ? 'Yes' : 'No',
+        Notes: a.notes || '',
         'Created At': a.createdAt ? new Date(a.createdAt).toISOString().split('T')[0] : '',
       }));
 

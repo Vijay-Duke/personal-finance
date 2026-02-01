@@ -1,0 +1,395 @@
+
+> personal-finance@0.1.0 build
+> astro check && astro build 2
+
+18:33:19 [@astrojs/node] Enabling sessions with filesystem storage
+18:33:19 [content] Syncing content
+18:33:19 [content] Synced content
+18:33:19 [types] Generated 51ms
+18:33:19 [check] Getting diagnostics for Astro files in /Users/vijay/IdeaProjects/personal-finance...
+[96msrc/components/accounts/BankAccountsList.tsx[0m:[93m95[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m95[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m  [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/BusinessAssetsList.tsx[0m:[93m133[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m133[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/CryptoList.tsx[0m:[93m123[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m123[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/DebtsList.tsx[0m:[93m126[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m126[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/PersonalAssetsList.tsx[0m:[93m123[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m123[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/RealEstateList.tsx[0m:[93m150[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m150[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/StocksList.tsx[0m:[93m113[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m113[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/accounts/SuperannuationList.tsx[0m:[93m112[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m112[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/ai/AIChatPanel.tsx[0m:[93m87[0m:[93m52[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m87[0m   const handleSubmit = useCallback(async (e: React.FormEvent) => {
+[7m  [0m [93m                                                   ~~~~~~~~~[0m
+
+[96msrc/components/ai/AIProviderForm.tsx[0m:[93m74[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m74[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m  [0m [93m                                 ~~~~~~~~~[0m
+
+[96msrc/components/auth/ForgotPasswordForm.tsx[0m:[93m13[0m:[93m40[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m13[0m   const handleSubmit = async (e: React.FormEvent) => {
+[7m  [0m [93m                                       ~~~~~~~~~[0m
+
+[96msrc/components/auth/LoginForm.tsx[0m:[93m13[0m:[93m40[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m13[0m   const handleSubmit = async (e: React.FormEvent) => {
+[7m  [0m [93m                                       ~~~~~~~~~[0m
+
+[96msrc/components/auth/SignupForm.tsx[0m:[93m16[0m:[93m40[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m16[0m   const handleSubmit = async (e: React.FormEvent) => {
+[7m  [0m [93m                                       ~~~~~~~~~[0m
+
+[96msrc/components/budgets/BudgetsList.tsx[0m:[93m203[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m203[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+[96msrc/components/budgets/BudgetsList.tsx[0m:[93m13[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'TrendingUp' is declared but its value is never read.
+
+[7m13[0m   TrendingUp,
+[7m  [0m [93m  ~~~~~~~~~~[0m
+[96msrc/components/budgets/BudgetsList.tsx[0m:[93m4[0m:[93m52[0m - [93mwarning[0m[90m ts(6133): [0m'CardDescription' is declared but its value is never read.
+
+[7m4[0m import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+[7m [0m [93m                                                   ~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/charts/DonutChart.tsx[0m:[93m112[0m:[93m43[0m - [93mwarning[0m[90m ts(6133): [0m'index' is declared but its value is never read.
+
+[7m112[0m         {segmentsWithAngles.map((segment, index) => (
+[7m   [0m [93m                                          ~~~~~[0m
+
+[96msrc/components/goals/GoalsList.tsx[0m:[93m197[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m197[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+[96msrc/components/goals/GoalsList.tsx[0m:[93m4[0m:[93m52[0m - [93mwarning[0m[90m ts(6133): [0m'CardDescription' is declared but its value is never read.
+
+[7m4[0m import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+[7m [0m [93m                                                   ~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/insurance/InsuranceList.tsx[0m:[93m213[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m213[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+[96msrc/components/insurance/InsuranceList.tsx[0m:[93m7[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'cn' is declared but its value is never read.
+
+[7m7[0m import { cn } from '@/lib/utils';
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/profile/AccountSettings.tsx[0m:[93m139[0m:[93m42[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m139[0m   const handlePasswordSubmit = (e: React.FormEvent) => {
+[7m   [0m [93m                                         ~~~~~~~~~[0m
+
+[96msrc/components/profile/FinancialProfileSettings.tsx[0m:[93m12[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'Globe' is declared but its value is never read.
+
+[7m12[0m   Globe,
+[7m  [0m [93m  ~~~~~[0m
+
+[96msrc/components/settings/CategoryRulesManager.tsx[0m:[93m212[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m212[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+[96msrc/components/settings/CategoryRulesManager.tsx[0m:[93m15[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'ArrowUpDown' is declared but its value is never read.
+
+[7m15[0m   ArrowUpDown,
+[7m  [0m [93m  ~~~~~~~~~~~[0m
+[96msrc/components/settings/CategoryRulesManager.tsx[0m:[93m13[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'X' is declared but its value is never read.
+
+[7m13[0m   X,
+[7m  [0m [93m  ~[0m
+[96msrc/components/settings/CategoryRulesManager.tsx[0m:[93m12[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'Check' is declared but its value is never read.
+
+[7m12[0m   Check,
+[7m  [0m [93m  ~~~~~[0m
+
+[96msrc/components/transactions/TransactionsList.tsx[0m:[93m226[0m:[93m34[0m - [93mwarning[0m[90m ts(6385): [0m'FormEvent' is deprecated.
+
+[7m226[0m   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+[7m   [0m [93m                                 ~~~~~~~~~[0m
+[96msrc/components/transactions/TransactionsList.tsx[0m:[93m19[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'Download' is declared but its value is never read.
+
+[7m19[0m   Download,
+[7m  [0m [93m  ~~~~~~~~[0m
+
+[96msrc/lib/ai/context-builder.ts[0m:[93m10[0m:[93m25[0m - [93mwarning[0m[90m ts(6133): [0m'sql' is declared but its value is never read.
+
+[7m10[0m import { eq, and, desc, sql } from 'drizzle-orm';
+[7m  [0m [93m                        ~~~[0m
+[96msrc/lib/ai/context-builder.ts[0m:[93m10[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'desc' is declared but its value is never read.
+
+[7m10[0m import { eq, and, desc, sql } from 'drizzle-orm';
+[7m  [0m [93m                  ~~~~[0m
+
+[96msrc/lib/db/schema/transaction.ts[0m:[93m161[0m:[93m32[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(name: "transaction_tags", columns: { transactionId: NotNull<SQLiteTextBuilderInitial<"transaction_id", [string, ...string[]], number | undefined>>; tagId: NotNull<...>; createdAt: HasDefault<...>; }, extraConfig?: ((self: { ...; }) => SQLiteTableExtraConfig) | undefined): SQLiteTableWithColumns<...>' of 'sqliteTable' is deprecated.
+
+[7m161[0m export const transactionTags = sqliteTable('transaction_tags', {
+[7m   [0m [93m                               ~~~~~~~~~~~[0m
+[96msrc/lib/db/schema/transaction.ts[0m:[93m28[0m:[93m29[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(name: "transactions", columns: { id: HasRuntimeDefault<HasDefault<IsPrimaryKey<NotNull<SQLiteTextBuilderInitial<"id", [string, ...string[]], number | undefined>>>>>; ... 24 more ...; updatedAt: HasDefault<...>; }, extraConfig?: ((self: { ...; }) => SQLiteTableExtraConfig) | undefined): SQLiteTableWithColumns<...>' of 'sqliteTable' is deprecated.
+
+[7m28[0m export const transactions = sqliteTable('transactions', {
+[7m  [0m [93m                            ~~~~~~~~~~~[0m
+[96msrc/lib/db/schema/transaction.ts[0m:[93m2[0m:[93m15[0m - [93mwarning[0m[90m ts(6133): [0m'relations' is declared but its value is never read.
+
+[7m2[0m import { sql, relations } from 'drizzle-orm';
+[7m [0m [93m              ~~~~~~~~~[0m
+
+[96msrc/lib/db/schema/user-account-permission.ts[0m:[93m1[0m:[93m38[0m - [93mwarning[0m[90m ts(6133): [0m'primaryKey' is declared but its value is never read.
+
+[7m1[0m import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+[7m [0m [93m                                     ~~~~~~~~~~[0m
+
+[96msrc/lib/db/schema/accounts/valuation-history.ts[0m:[93m26[0m:[93m33[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(name: "valuation_history", columns: { id: HasRuntimeDefault<HasDefault<IsPrimaryKey<NotNull<SQLiteTextBuilderInitial<"id", [string, ...string[]], number | undefined>>>>>; ... 7 more ...; createdAt: HasDefault<...>; }, extraConfig?: ((self: { ...; }) => SQLiteTableExtraConfig) | undefined): SQLiteTableWithColumns<...>' of 'sqliteTable' is deprecated.
+
+[7m26[0m export const valuationHistory = sqliteTable('valuation_history', {
+[7m  [0m [93m                                ~~~~~~~~~~~[0m
+
+[96msrc/lib/import/csv-parser.ts[0m:[93m40[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'DATE_FORMATS' is declared but its value is never read.
+
+[7m40[0m const DATE_FORMATS = [
+[7m  [0m [93m      ~~~~~~~~~~~~[0m
+
+[96msrc/lib/integrations/currency.ts[0m:[93m11[0m:[93m3[0m - [93mwarning[0m[90m ts(6133): [0m'frankfurter' is declared but its value is never read.
+
+[7m11[0m   frankfurter,
+[7m  [0m [93m  ~~~~~~~~~~~[0m
+
+[96msrc/pages/api/ai/budget-suggestions.ts[0m:[93m120[0m:[93m26[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(options: (Omit<CallSettings, "stopSequences"> & Prompt) & { schema: ZodObject<{ totalSuggestedBudget: ZodNumber; categories: ZodArray<ZodObject<{ categoryId: ZodOptional<ZodString>; ... 5 more ...; flexibility: ZodEnum<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>, "many">; savingsTarget: ZodObject<...>; analysis: ZodObject<...>; scenarios: ZodOptional<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>; schemaName?: string | undefined; schemaDescription?: string | undefined; } & { ...; }): Promise<...>' of 'generateObject' is deprecated.
+
+[7m120[0m     const result = await generateObject({
+[7m   [0m [93m                         ~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/ai/budget-suggestions.ts[0m:[93m2[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'generateObject' is deprecated.
+
+[7m2[0m import { generateObject } from 'ai';
+[7m [0m [93m         ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/api/ai/categorize.ts[0m:[93m104[0m:[93m26[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(options: (Omit<CallSettings, "stopSequences"> & Prompt) & { schema: ZodObject<{ categoryId: ZodNullable<ZodString>; categoryName: ZodString; confidence: ZodNumber; reasoning: ZodString; alternativeCategories: ZodOptional<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>; schemaName?: string | undefined; schemaDescription?: string | undefined; } & { ...; }): Promise<...>' of 'generateObject' is deprecated.
+
+[7m104[0m     const result = await generateObject({
+[7m   [0m [93m                         ~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/ai/categorize.ts[0m:[93m2[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'generateObject' is deprecated.
+
+[7m2[0m import { generateObject } from 'ai';
+[7m [0m [93m         ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/api/ai/insights.ts[0m:[93m120[0m:[93m26[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(options: (Omit<CallSettings, "stopSequences"> & Prompt) & { schema: ZodObject<{ insights: ZodArray<ZodObject<{ id: ZodString; type: ZodEnum<["spending_pattern", "saving_opportunity", ... 5 more ..., "general"]>; ... 5 more ...; relatedMetrics: ZodOptional<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>, "many">; summary: ZodString; generatedAt: ZodString; }, "strip", ZodTypeAny, { ...; }, { ...; }>; schemaName?: string | undefined; schemaDescription?: string | undefined; } & { ...; }): Promise<...>' of 'generateObject' is deprecated.
+
+[7m120[0m     const result = await generateObject({
+[7m   [0m [93m                         ~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/ai/insights.ts[0m:[93m2[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'generateObject' is deprecated.
+
+[7m2[0m import { generateObject } from 'ai';
+[7m [0m [93m         ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/api/ai/retirement-projection.ts[0m:[93m155[0m:[93m26[0m - [93mwarning[0m[90m ts(6387): [0mThe signature '(options: (Omit<CallSettings, "stopSequences"> & Prompt) & { schema: ZodObject<{ summary: ZodObject<{ currentAge: ZodNumber; targetRetirementAge: ZodNumber; yearsToRetirement: ZodNumber; retirementYear: ZodNumber; probabilityOfSuccess: ZodNumber; confidenceLevel: ZodEnum<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>; ... 4 more ...; recommendations: ZodArray<...>; }, "strip", ZodTypeAny, { ...; }, { ...; }>; schemaName?: string | undefined; schemaDescription?: string | undefined; } & { ...; }): Promise<...>' of 'generateObject' is deprecated.
+
+[7m155[0m     const result = await generateObject({
+[7m   [0m [93m                         ~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/ai/retirement-projection.ts[0m:[93m2[0m:[93m10[0m - [93mwarning[0m[90m ts(6385): [0m'generateObject' is deprecated.
+
+[7m2[0m import { generateObject } from 'ai';
+[7m [0m [93m         ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/api/ai/conversations/[id]/messages.ts[0m:[93m154[0m:[93m12[0m - [93mwarning[0m[90m ts(6133): [0m'updated' is declared but its value is never read.
+
+[7m154[0m     const [updated] = await db
+[7m   [0m [93m           ~~~~~~~[0m
+[96msrc/pages/api/ai/conversations/[id]/messages.ts[0m:[93m105[0m:[93m12[0m - [93mwarning[0m[90m ts(6133): [0m'updated' is declared but its value is never read.
+
+[7m105[0m     const [updated] = await db
+[7m   [0m [93m           ~~~~~~~[0m
+
+[96msrc/pages/api/ai/providers/[id].ts[0m:[93m7[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'decrypt' is declared but its value is never read.
+
+[7m7[0m import { encrypt, decrypt } from '../../../../lib/ai/encryption';
+[7m [0m [93m                  ~~~~~~~[0m
+
+[96msrc/pages/api/categories/index.ts[0m:[93m4[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'isNull' is declared but its value is never read.
+
+[7m4[0m import { eq, and, isNull, asc } from 'drizzle-orm';
+[7m [0m [93m                  ~~~~~~[0m
+
+[96msrc/pages/api/dashboard/summary.ts[0m:[93m4[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'sql' is declared but its value is never read.
+
+[7m4[0m import { eq, and, sql } from 'drizzle-orm';
+[7m [0m [93m                  ~~~[0m
+[96msrc/pages/api/dashboard/summary.ts[0m:[93m3[0m:[93m20[0m - [93mwarning[0m[90m ts(6133): [0m'bankAccounts' is declared but its value is never read.
+
+[7m3[0m import { accounts, bankAccounts, stocks, cryptoAssets } from '../../../lib/db/schema';
+[7m [0m [93m                   ~~~~~~~~~~~~[0m
+
+[96msrc/pages/api/export/json.ts[0m:[93m17[0m:[93m10[0m - [93mwarning[0m[90m ts(6133): [0m'json' is declared but its value is never read.
+
+[7m17[0m import { json, error, unauthorized } from '../../../lib/api/response';
+[7m  [0m [93m         ~~~~[0m
+
+[96msrc/pages/api/goals/[id].ts[0m:[93m4[0m:[93m25[0m - [93mwarning[0m[90m ts(6133): [0m'sql' is declared but its value is never read.
+
+[7m4[0m import { eq, and, desc, sql } from 'drizzle-orm';
+[7m [0m [93m                        ~~~[0m
+
+[96msrc/pages/api/import/csv.ts[0m:[93m13[0m:[93m25[0m - [93mwarning[0m[90m ts(6133): [0m'ParsedTransaction' is declared but its value is never read.
+
+[7m13[0m import { parseCSV, type ParsedTransaction } from '../../../lib/import/csv-parser';
+[7m  [0m [93m                        ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/import/csv.ts[0m:[93m10[0m:[93m19[0m - [93mwarning[0m[90m ts(6133): [0m'like' is declared but its value is never read.
+
+[7m10[0m import { eq, and, like, sql } from 'drizzle-orm';
+[7m  [0m [93m                  ~~~~[0m
+
+[96msrc/pages/api/notifications/mark-all-read.ts[0m:[93m45[0m:[93m11[0m - [93mwarning[0m[90m ts(6133): [0m'updatedNotifications' is declared but its value is never read.
+
+[7m45[0m     const updatedNotifications = await db
+[7m  [0m [93m          ~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/api/notifications/mark-all-read.ts[0m:[93m35[0m:[93m11[0m - [93mwarning[0m[90m ts(6133): [0m'result' is declared but its value is never read.
+
+[7m35[0m     const result = await db
+[7m  [0m [93m          ~~~~~~[0m
+
+[96msrc/pages/api/transactions/[id].ts[0m:[93m11[0m:[93m24[0m - [93mwarning[0m[90m ts(6133): [0m'inArray' is declared but its value is never read.
+
+[7m11[0m import { eq, and, sql, inArray } from 'drizzle-orm';
+[7m  [0m [93m                       ~~~~~~~[0m
+
+Result (158 files): 
+- 0 errors
+- 0 warnings
+- 59 hints
+
+18:33:30 [@astrojs/node] Enabling sessions with filesystem storage
+18:33:30 [content] Syncing content
+18:33:30 [content] Synced content
+18:33:30 [types] Generated 42ms
+18:33:30 [build] output: "server"
+18:33:30 [build] mode: "server"
+18:33:30 [build] directory: /Users/vijay/IdeaProjects/personal-finance/dist/
+18:33:30 [build] adapter: @astrojs/node
+18:33:30 [build] Collecting build info...
+18:33:30 [build] ✓ Completed in 76ms.
+18:33:30 [build] Building server entrypoints...
+18:33:32 [WARN] [vite] "relations" is imported from external module "drizzle-orm" but never used in "src/lib/db/schema/transaction.ts".
+18:33:32 [WARN] [vite] "primaryKey" is imported from external module "drizzle-orm/sqlite-core" but never used in "src/lib/db/schema/user-account-permission.ts".
+18:33:32 [WARN] [vite] "Globe" and "ArrowUpDown" are imported from external module "lucide-react" but never used in "src/components/profile/FinancialProfileSettings.tsx" and "src/components/settings/CategoryRulesManager.tsx".
+18:33:32 [vite] ✓ built in 1.67s
+18:33:32 [build] ✓ Completed in 1.70s.
+
+ building client (vite) 
+18:33:32 [vite] transforming...
+18:33:33 [vite] ✓ 1980 modules transformed.
+18:33:34 [vite] rendering chunks...
+18:33:34 [vite] computing gzip size...
+18:33:34 [vite] dist/client/registerSW.js                                                           0.13 kB
+18:33:34 [vite] dist/client/_astro/check.BCYdYUyx.js                                                0.30 kB │ gzip:  0.25 kB
+18:33:34 [vite] dist/client/_astro/loader-circle.C-zIysGO.js                                        0.32 kB │ gzip:  0.27 kB
+18:33:34 [vite] dist/client/_astro/plus.eEFmlJcC.js                                                 0.34 kB │ gzip:  0.26 kB
+18:33:34 [vite] dist/client/_astro/x.Dktm8jMP.js                                                    0.34 kB │ gzip:  0.27 kB
+18:33:34 [vite] dist/client/_astro/label.BE4grfYQ.js                                                0.34 kB │ gzip:  0.26 kB
+18:33:34 [vite] dist/client/_astro/trending-up.9VjT9pMt.js                                          0.36 kB │ gzip:  0.28 kB
+18:33:34 [vite] dist/client/_astro/user.BqdVN_pY.js                                                 0.38 kB │ gzip:  0.29 kB
+18:33:34 [vite] dist/client/_astro/info.BP5jPUdo.js                                                 0.38 kB │ gzip:  0.29 kB
+18:33:34 [vite] dist/client/_astro/dollar-sign.D9YSjafh.js                                          0.40 kB │ gzip:  0.30 kB
+18:33:34 [vite] dist/client/_astro/briefcase.D6szNUqb.js                                            0.40 kB │ gzip:  0.31 kB
+18:33:34 [vite] dist/client/_astro/target.B7ltlfKJ.js                                               0.41 kB │ gzip:  0.27 kB
+18:33:34 [vite] dist/client/_astro/upload.EZmkXzL9.js                                               0.41 kB │ gzip:  0.31 kB
+18:33:34 [vite] dist/client/_astro/pen.Cap0RuqZ.js                                                  0.42 kB │ gzip:  0.31 kB
+18:33:34 [vite] dist/client/_astro/arrow-left-right.DEpXrdtt.js                                     0.43 kB │ gzip:  0.31 kB
+18:33:34 [vite] dist/client/_astro/circle-alert.CxLIz0ff.js                                         0.43 kB │ gzip:  0.30 kB
+18:33:34 [vite] dist/client/_astro/funnel.BwSxzBAT.js                                               0.44 kB │ gzip:  0.32 kB
+18:33:34 [vite] dist/client/_astro/calendar.DupALeIF.js                                             0.44 kB │ gzip:  0.31 kB
+18:33:34 [vite] dist/client/_astro/triangle-alert.DhPDVZHn.js                                       0.45 kB │ gzip:  0.32 kB
+18:33:34 [vite] dist/client/_astro/shield.COUHR9h7.js                                               0.45 kB │ gzip:  0.34 kB
+18:33:34 [vite] dist/client/_astro/wallet.DIEImsvY.js                                               0.47 kB │ gzip:  0.32 kB
+18:33:34 [vite] dist/client/_astro/bell.YyGUgs3C.js                                                 0.47 kB │ gzip:  0.35 kB
+18:33:34 [vite] dist/client/_astro/trash-2.CR34xYJI.js                                              0.51 kB │ gzip:  0.33 kB
+18:33:34 [vite] dist/client/_astro/piggy-bank.0QPtSHqY.js                                           0.59 kB │ gzip:  0.37 kB
+18:33:34 [vite] dist/client/_astro/file-spreadsheet.CVx9bAUj.js                                     0.61 kB │ gzip:  0.37 kB
+18:33:34 [vite] dist/client/_astro/input.bZU65_to.js                                                0.62 kB │ gzip:  0.39 kB
+18:33:34 [vite] dist/client/_astro/jsx-runtime.D_zvdyIk.js                                          0.73 kB │ gzip:  0.46 kB
+18:33:34 [vite] dist/client/_astro/credit-card.DKfsGnwg.js                                          0.90 kB │ gzip:  0.45 kB
+18:33:34 [vite] dist/client/_astro/card.CYfvxZwv.js                                                 1.05 kB │ gzip:  0.40 kB
+18:33:34 [vite] dist/client/_astro/sparkles.CD1rNEnI.js                                             1.49 kB │ gzip:  0.60 kB
+18:33:34 [vite] dist/client/_astro/button.BadrLV7H.js                                               1.82 kB │ gzip:  0.92 kB
+18:33:34 [vite] dist/client/_astro/LoginForm.C0GrExBw.js                                            1.99 kB │ gzip:  0.89 kB
+18:33:34 [vite] dist/client/_astro/useMutation.D4B69lS6.js                                          2.29 kB │ gzip:  0.95 kB
+18:33:34 [vite] dist/client/_astro/ForgotPasswordForm.Ct1L1wr9.js                                   2.29 kB │ gzip:  1.01 kB
+18:33:34 [vite] dist/client/_astro/createLucideIcon.DdYR_W5z.js                                     2.58 kB │ gzip:  0.81 kB
+18:33:34 [vite] dist/client/_astro/SignupForm.Cf2dU9KG.js                                           2.77 kB │ gzip:  1.07 kB
+18:33:34 [vite] dist/client/_astro/mutation.BiTO1hEr.js                                             3.40 kB │ gzip:  1.15 kB
+18:33:34 [vite] dist/client/_astro/ui.L8VzwElo.js                                                   3.91 kB │ gzip:  1.52 kB
+18:33:34 [vite] dist/client/_astro/data-sources.astro_astro_type_script_index_0_lang.Dp0HdioC.js    5.58 kB │ gzip:  1.92 kB
+18:33:34 [vite] dist/client/_astro/BankAccountsList.ChO8VFj3.js                                     7.44 kB │ gzip:  2.44 kB
+18:33:34 [vite] dist/client/_astro/index.DiEladB3.js                                                7.85 kB │ gzip:  3.05 kB
+18:33:34 [vite] dist/client/_astro/AIChatButton.DE5y1vi7.js                                         7.86 kB │ gzip:  2.85 kB
+18:33:34 [vite] dist/client/_astro/QueryProvider.zelO-LDX.js                                        8.37 kB │ gzip:  2.84 kB
+18:33:34 [vite] dist/client/_astro/StocksList.CJvhpKI4.js                                           8.64 kB │ gzip:  2.72 kB
+18:33:34 [vite] dist/client/_astro/useQuery.vH3r_Vqd.js                                             8.87 kB │ gzip:  3.25 kB
+18:33:34 [vite] dist/client/_astro/Sidebar.S48Yj8-1.js                                              9.20 kB │ gzip:  2.90 kB
+18:33:34 [vite] dist/client/_astro/CSVImport.Cxe8o-oQ.js                                            9.52 kB │ gzip:  2.96 kB
+18:33:34 [vite] dist/client/_astro/AccountSettings.Ue5N7Rl4.js                                      9.58 kB │ gzip:  2.92 kB
+18:33:34 [vite] dist/client/_astro/NotificationBell.DabPBLQV.js                                    10.02 kB │ gzip:  3.46 kB
+18:33:34 [vite] dist/client/_astro/CryptoList.B1ONiz7B.js                                          10.05 kB │ gzip:  3.03 kB
+18:33:34 [vite] dist/client/_astro/BudgetsList.DUg95GIW.js                                         10.15 kB │ gzip:  3.36 kB
+18:33:34 [vite] dist/client/_astro/PersonalAssetsList.CBTDirte.js                                  10.83 kB │ gzip:  3.15 kB
+18:33:34 [vite] dist/client/_astro/SuperannuationList.DqbFfAsZ.js                                  10.90 kB │ gzip:  2.96 kB
+18:33:34 [vite] dist/client/_astro/BusinessAssetsList.CEudNx51.js                                  12.05 kB │ gzip:  3.19 kB
+18:33:34 [vite] dist/client/_astro/CategoryRulesManager.C6iPg4pX.js                                12.54 kB │ gzip:  3.65 kB
+18:33:34 [vite] dist/client/_astro/DebtsList.BFJhP3RC.js                                           12.75 kB │ gzip:  3.51 kB
+18:33:34 [vite] dist/client/_astro/GoalsList.HW1PiXIF.js                                           13.50 kB │ gzip:  4.05 kB
+18:33:34 [vite] dist/client/_astro/QueryClientProvider.BINm7PNd.js                                 13.69 kB │ gzip:  4.79 kB
+18:33:34 [vite] dist/client/_astro/InsuranceList.B2FRScum.js                                       13.76 kB │ gzip:  4.13 kB
+18:33:34 [vite] dist/client/_astro/RealEstateList.BsLjThiu.js                                      13.96 kB │ gzip:  3.50 kB
+18:33:34 [vite] dist/client/_astro/FinancialProfileSettings.HwLnw_O3.js                            15.76 kB │ gzip:  3.74 kB
+18:33:34 [vite] dist/client/_astro/SettingsLayout.DPPOED5S.js                                      15.94 kB │ gzip:  4.03 kB
+18:33:34 [vite] dist/client/_astro/TransactionsList.Dg77x9db.js                                    16.22 kB │ gzip:  4.61 kB
+18:33:34 [vite] dist/client/_astro/AIProviderSettings.D69cRKcX.js                                  16.57 kB │ gzip:  4.82 kB
+18:33:34 [vite] dist/client/_astro/Dashboard.Br79Jy7J.js                                           17.31 kB │ gzip:  4.67 kB
+18:33:34 [vite] dist/client/_astro/cn.CDN07tui.js                                                  25.51 kB │ gzip:  8.14 kB
+18:33:34 [vite] dist/client/_astro/client.szg-bY1w.js                                              25.89 kB │ gzip:  9.76 kB
+18:33:34 [vite] dist/client/_astro/client.Dc9Vh3na.js                                             186.62 kB │ gzip: 58.46 kB
+18:33:34 [vite] ✓ built in 1.90s
+
+PWA v1.2.0
+mode      generateSW
+precache  91 entries (815.01 KiB)
+files generated
+  dist/client/sw.js
+  dist/client/workbox-1d305bb8.js
+
+ prerendering static routes 
+18:33:36 ✓ Completed in 31ms.
+
+18:33:36 [build] Rearranging server assets...
+18:33:36 [build] Server built in 5.57s
+18:33:36 [build] Complete!

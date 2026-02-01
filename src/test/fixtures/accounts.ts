@@ -1,0 +1,118 @@
+/**
+ * Test Fixtures - Accounts
+ * Reusable test data for account-related tests
+ */
+
+import type { Account, BankAccount, Stock, CryptoAsset } from '@/lib/db/schema/accounts';
+
+export const mockHouseholdId = 'test-household-id';
+export const mockUserId = 'test-user-id';
+
+export const mockBankAccount: Account & { bankAccount: BankAccount } = {
+  id: 'bank-acc-1',
+  householdId: mockHouseholdId,
+  name: 'Test Checking Account',
+  type: 'bank_account',
+  currency: 'USD',
+  currentBalance: 5000.00,
+  isActive: true,
+  isLiquid: true,
+  includeInNetWorth: true,
+  expectedAnnualReturnRate: null,
+  icon: null,
+  color: null,
+  sortOrder: 0,
+  notes: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  bankAccount: {
+    id: 'bank-detail-1',
+    accountId: 'bank-acc-1',
+    bankName: 'Test Bank',
+    accountNumber: '****1234',
+    routingNumber: null,
+    accountType: 'checking',
+    interestRate: null,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+  },
+};
+
+export const mockStockAccount: Account & { stock: Stock } = {
+  id: 'stock-acc-1',
+  householdId: mockHouseholdId,
+  name: 'AAPL Holdings',
+  type: 'stock',
+  currency: 'USD',
+  currentBalance: 15000.00,
+  isActive: true,
+  isLiquid: true,
+  includeInNetWorth: true,
+  expectedAnnualReturnRate: 0.10,
+  icon: null,
+  color: null,
+  sortOrder: 0,
+  notes: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  stock: {
+    id: 'stock-detail-1',
+    accountId: 'stock-acc-1',
+    symbol: 'AAPL',
+    exchange: 'NASDAQ',
+    securityName: 'Apple Inc.',
+    shares: 100,
+    avgCostBasis: 150.00,
+    totalCostBasis: 15000.00,
+    currentPrice: 150.00,
+    priceUpdatedAt: null,
+    broker: 'Test Broker',
+    brokerAccountId: null,
+    dividendYield: 0.005,
+    lastDividendDate: null,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+  },
+};
+
+export const mockCryptoAccount: Account & { crypto: CryptoAsset } = {
+  id: 'crypto-acc-1',
+  householdId: mockHouseholdId,
+  name: 'Bitcoin Wallet',
+  type: 'crypto',
+  currency: 'USD',
+  currentBalance: 20000.00,
+  isActive: true,
+  isLiquid: true,
+  includeInNetWorth: true,
+  expectedAnnualReturnRate: null,
+  icon: null,
+  color: null,
+  sortOrder: 0,
+  notes: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  crypto: {
+    id: 'crypto-detail-1',
+    accountId: 'crypto-acc-1',
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    coingeckoId: 'bitcoin',
+    network: 'mainnet',
+    holdings: 0.5,
+    avgCostBasis: 40000.00,
+    totalCostBasis: 20000.00,
+    currentPrice: 40000.00,
+    priceUpdatedAt: null,
+    storageType: 'cold_wallet',
+    exchangeName: null,
+    walletAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+    walletName: 'Hardware Wallet',
+    isStaked: false,
+    stakingApy: null,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+  },
+};
+
+export const mockAccounts = [mockBankAccount, mockStockAccount, mockCryptoAccount];

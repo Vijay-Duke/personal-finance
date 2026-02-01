@@ -1,0 +1,20 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { RecurringTransactionsList } from '../components/recurring/RecurringTransactionsList';
+import { QueryProvider } from '../components/providers/QueryProvider';
+---
+
+<AppLayout title="Recurring Transactions">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Recurring Transactions</h1>
+      <p class="text-muted-foreground">
+        Manage subscriptions, bills, and scheduled transactions.
+      </p>
+    </div>
+
+    <QueryProvider client:load>
+      <RecurringTransactionsList client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

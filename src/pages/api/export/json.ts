@@ -56,13 +56,16 @@ export const GET: APIRoute = async (context) => {
           id: accounts.id,
           name: accounts.name,
           type: accounts.type,
-          subtype: accounts.subtype,
           currency: accounts.currency,
           currentBalance: accounts.currentBalance,
-          institution: accounts.institution,
-          accountNumber: accounts.accountNumber,
           isActive: accounts.isActive,
-          metadata: accounts.metadata,
+          isLiquid: accounts.isLiquid,
+          includeInNetWorth: accounts.includeInNetWorth,
+          expectedAnnualReturnRate: accounts.expectedAnnualReturnRate,
+          icon: accounts.icon,
+          color: accounts.color,
+          sortOrder: accounts.sortOrder,
+          notes: accounts.notes,
           createdAt: accounts.createdAt,
           updatedAt: accounts.updatedAt,
         })
@@ -82,7 +85,8 @@ export const GET: APIRoute = async (context) => {
           color: categories.color,
           icon: categories.icon,
           parentId: categories.parentId,
-          isActive: categories.isActive,
+          isSystem: categories.isSystem,
+          sortOrder: categories.sortOrder,
           createdAt: categories.createdAt,
         })
         .from(categories)
@@ -154,7 +158,8 @@ export const GET: APIRoute = async (context) => {
             tagId: transactionTags.tagId,
           })
           .from(transactionTags)
-          .where(eq(transactionTags.householdId, householdId));
+          .innerJoin(tags, eq(transactionTags.tagId, tags.id))
+          .where(eq(tags.householdId, householdId));
 
         transactionTagsData = allTransactionTags.reduce((acc, tt) => {
           if (!acc[tt.transactionId]) acc[tt.transactionId] = [];
@@ -174,13 +179,16 @@ export const GET: APIRoute = async (context) => {
       const budgetsData = await db
         .select({
           id: budgets.id,
-          name: budgets.name,
-          period: budgets.period,
-          startDate: budgets.startDate,
-          endDate: budgets.endDate,
-          totalBudgeted: budgets.totalBudgeted,
-          totalSpent: budgets.totalSpent,
+          categoryId: budgets.categoryId,
+          amount: budgets.amount,
           currency: budgets.currency,
+          period: budgets.period,
+          periodStart: budgets.periodStart,
+          rolloverEnabled: budgets.rolloverEnabled,
+          rolloverAmount: budgets.rolloverAmount,
+          alertThreshold: budgets.alertThreshold,
+          alertEnabled: budgets.alertEnabled,
+          notes: budgets.notes,
           isActive: budgets.isActive,
           createdAt: budgets.createdAt,
           updatedAt: budgets.updatedAt,
@@ -218,18 +226,27 @@ export const GET: APIRoute = async (context) => {
       const insuranceData = await db
         .select({
           id: insurancePolicies.id,
-          policyName: insurancePolicies.policyName,
+          name: insurancePolicies.name,
           provider: insurancePolicies.provider,
           type: insurancePolicies.type,
+          status: insurancePolicies.status,
           policyNumber: insurancePolicies.policyNumber,
           coverageAmount: insurancePolicies.coverageAmount,
+          deductible: insurancePolicies.deductible,
           premiumAmount: insurancePolicies.premiumAmount,
           premiumFrequency: insurancePolicies.premiumFrequency,
+          nextPremiumDate: insurancePolicies.nextPremiumDate,
           currency: insurancePolicies.currency,
           startDate: insurancePolicies.startDate,
+          endDate: insurancePolicies.endDate,
           renewalDate: insurancePolicies.renewalDate,
-          status: insurancePolicies.status,
+          linkedAssetIds: insurancePolicies.linkedAssetIds,
+          beneficiaries: insurancePolicies.beneficiaries,
+          agentName: insurancePolicies.agentName,
+          agentPhone: insurancePolicies.agentPhone,
+          agentEmail: insurancePolicies.agentEmail,
           notes: insurancePolicies.notes,
+          documentUrl: insurancePolicies.documentUrl,
           createdAt: insurancePolicies.createdAt,
           updatedAt: insurancePolicies.updatedAt,
         })
@@ -244,13 +261,15 @@ export const GET: APIRoute = async (context) => {
       const dataSourcesData = await db
         .select({
           id: dataSources.id,
-          name: dataSources.name,
           type: dataSources.type,
           provider: dataSources.provider,
+          isEnabled: dataSources.isEnabled,
           syncFrequency: dataSources.syncFrequency,
           lastSyncAt: dataSources.lastSyncAt,
-          lastSyncStatus: dataSources.lastSyncStatus,
-          isActive: dataSources.isActive,
+          rateLimitRemaining: dataSources.rateLimitRemaining,
+          rateLimitResetAt: dataSources.rateLimitResetAt,
+          lastErrorAt: dataSources.lastErrorAt,
+          lastErrorMessage: dataSources.lastErrorMessage,
           createdAt: dataSources.createdAt,
           updatedAt: dataSources.updatedAt,
         })

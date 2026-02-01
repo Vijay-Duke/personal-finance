@@ -1,0 +1,341 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+---
+
+<AppLayout title="Data Sources - Settings">
+  <div class="container mx-auto py-8 max-w-4xl">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Data Sources</h1>
+      <p class="text-muted-foreground mt-2">
+        Configure external API integrations for live price data
+      </p>
+    </div>
+
+    <!-- Integration Health -->
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Integration Health</CardTitle>
+        <CardDescription>Status of all external API integrations</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div id="health-status" class="space-y-2">
+          <p class="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- Data Sources List -->
+    <Card className="mb-6">
+      <CardHeader>
+        <div class="flex items-center justify-between">
+          <div>
+            <CardTitle>Configured Sources</CardTitle>
+            <CardDescription>Manage your data source connections</CardDescription>
+          </div>
+          <Button id="add-source-btn" variant="outline" size="sm">Add Source</Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div id="data-sources-list" class="space-y-4">
+          <p class="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!-- Quick Actions -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Quick Actions</CardTitle>
+        <CardDescription>Manual sync and refresh operations</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="flex flex-wrap gap-3">
+          <Button id="refresh-all-btn" variant="default">Refresh All Prices</Button>
+          <Button id="sync-rates-btn" variant="outline">Sync Exchange Rates</Button>
+          <Button id="test-health-btn" variant="outline">Test Connections</Button>
+        </div>
+        <div id="action-result" class="mt-4 hidden">
+          <p class="text-sm"></p>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+
+  <!-- Add Data Source Modal -->
+  <div id="add-source-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-bold mb-4">Add Data Source</h2>
+      <form id="add-source-form" class="space-y-4">
+        <div>
+          <Label htmlFor="source-type">Data Type</Label>
+          <select id="source-type" name="type" class="w-full mt-1 px-3 py-2 border rounded-md" required>
+            <option value="">Select type...</option>
+            <option value="crypto">Cryptocurrency</option>
+            <option value="stock">Stocks & ETFs</option>
+            <option value="forex">Exchange Rates</option>
+            <option value="metal">Precious Metals</option>
+          </select>
+        </div>
+        <div>
+          <Label htmlFor="source-provider">Provider</Label>
+          <select id="source-provider" name="provider" class="w-full mt-1 px-3 py-2 border rounded-md" required>
+            <option value="">Select provider...</option>
+          </select>
+        </div>
+        <div id="api-key-field" class="hidden">
+          <Label htmlFor="source-api-key">API Key</Label>
+          <Input id="source-api-key" name="apiKey" type="password" placeholder="Enter API key" />
+          <p class="text-xs text-muted-foreground mt-1">Only required for some providers</p>
+        </div>
+        <div>
+          <Label htmlFor="sync-frequency">Sync Frequency</Label>
+          <select id="sync-frequency" name="syncFrequency" class="w-full mt-1 px-3 py-2 border rounded-md">
+            <option value="realtime">Real-time</option>
+            <option value="hourly">Hourly</option>
+            <option value="daily" selected>Daily</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <Button type="submit" className="flex-1">Add Source</Button>
+          <Button type="button" variant="outline" id="cancel-add-btn">Cancel</Button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AppLayout>
+
+<script>
+  const providerOptions: Record<string, Array<{ value: string; label: string; needsKey: boolean }>> = {
+    crypto: [{ value: 'coingecko', label: 'CoinGecko (Free, no API key)', needsKey: false }],
+    stock: [
+      { value: 'yahoo_finance', label: 'Yahoo Finance (Free, no API key)', needsKey: false },
+      { value: 'alpha_vantage', label: 'Alpha Vantage (API key required)', needsKey: true },
+    ],
+    forex: [
+      { value: 'frankfurter', label: 'Frankfurter (Free, no API key)', needsKey: false },
+      { value: 'open_exchange', label: 'Open Exchange Rates (API key required)', needsKey: true },
+    ],
+    metal: [{ value: 'metals_dev', label: 'Metals.dev (Free tier: 50/day)', needsKey: true }],
+  };
+
+  const healthStatus = document.getElementById('health-status');
+  const dataSourcesList = document.getElementById('data-sources-list');
+  const addSourceModal = document.getElementById('add-source-modal');
+  const addSourceBtn = document.getElementById('add-source-btn');
+  const cancelAddBtn = document.getElementById('cancel-add-btn');
+  const addSourceForm = document.getElementById('add-source-form') as HTMLFormElement;
+  const sourceTypeSelect = document.getElementById('source-type') as HTMLSelectElement;
+  const sourceProviderSelect = document.getElementById('source-provider') as HTMLSelectElement;
+  const apiKeyField = document.getElementById('api-key-field');
+  const refreshAllBtn = document.getElementById('refresh-all-btn') as HTMLButtonElement | null;
+  const syncRatesBtn = document.getElementById('sync-rates-btn') as HTMLButtonElement | null;
+  const testHealthBtn = document.getElementById('test-health-btn') as HTMLButtonElement | null;
+  const actionResult = document.getElementById('action-result');
+
+  async function loadHealthStatus() {
+    try {
+      const response = await fetch('/api/integrations/health');
+      const data = await response.json();
+      
+      if (healthStatus) {
+        healthStatus.innerHTML = data.integrations.map((integration: { 
+          name: string; healthy: boolean; message?: string; rateLimitRemaining?: number;
+        }) => `
+          <div class="flex items-center justify-between py-2 border-b last:border-0">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${integration.healthy ? 'bg-green-500' : 'bg-red-500'}"></span>
+              <span class="font-medium">${integration.name}</span>
+            </div>
+            <div class="text-sm text-muted-foreground">
+              ${integration.message || (integration.healthy ? 'Healthy' : 'Unhealthy')}
+              ${integration.rateLimitRemaining !== undefined ? `(${integration.rateLimitRemaining} remaining)` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (error) {
+      if (healthStatus) healthStatus.innerHTML = '<p class="text-red-500">Failed to load</p>';
+    }
+  }
+
+  async function loadDataSources() {
+    try {
+      const response = await fetch('/api/data-sources');
+      const data = await response.json();
+      
+      if (dataSourcesList) {
+        if (data.length === 0) {
+          dataSourcesList.innerHTML = '<p class="text-sm text-muted-foreground">No data sources configured.</p>';
+        } else {
+          dataSourcesList.innerHTML = data.map((source: { 
+            id: string; type: string; provider: string; isEnabled: boolean; lastSyncAt?: string;
+          }) => `
+            <div class="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <div class="font-medium capitalize">${source.type.replace('_', ' ')} - ${source.provider.replace('_', ' ')}</div>
+                <div class="text-sm text-muted-foreground">
+                  ${source.isEnabled ? 'Enabled' : 'Disabled'}
+                  ${source.lastSyncAt ? ` • Last sync: ${new Date(source.lastSyncAt).toLocaleString()}` : ''}
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="syncSource('${source.id}')" class="px-3 py-1 text-sm border rounded hover:bg-gray-100">Sync</button>
+                <button onclick="deleteSource('${source.id}')" class="px-3 py-1 text-sm text-red-600 border rounded hover:bg-red-50">Delete</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      if (dataSourcesList) dataSourcesList.innerHTML = '<p class="text-red-500">Failed to load</p>';
+    }
+  }
+
+  sourceTypeSelect?.addEventListener('change', () => {
+    const type = sourceTypeSelect.value;
+    const providers = providerOptions[type] || [];
+    sourceProviderSelect.innerHTML = `<option value="">Select provider...</option>` +
+      providers.map(p => `<option value="${p.value}" data-needs-key="${p.needsKey}">${p.label}</option>`).join('');
+  });
+
+  sourceProviderSelect?.addEventListener('change', () => {
+    const selected = sourceProviderSelect.selectedOptions[0];
+    apiKeyField?.classList.toggle('hidden', selected?.dataset.needsKey !== 'true');
+  });
+
+  addSourceBtn?.addEventListener('click', () => {
+    addSourceModal?.classList.remove('hidden');
+    addSourceModal?.classList.add('flex');
+  });
+
+  cancelAddBtn?.addEventListener('click', () => {
+    addSourceModal?.classList.add('hidden');
+    addSourceModal?.classList.remove('flex');
+    addSourceForm?.reset();
+  });
+
+  addSourceForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(addSourceForm);
+    const body: Record<string, unknown> = {
+      type: formData.get('type'),
+      provider: formData.get('provider'),
+      syncFrequency: formData.get('syncFrequency'),
+      isEnabled: true,
+    };
+    const apiKey = formData.get('apiKey') as string;
+    if (apiKey) body.apiKey = apiKey;
+
+    try {
+      const response = await fetch('/api/data-sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        addSourceModal?.classList.add('hidden');
+        addSourceModal?.classList.remove('flex');
+        addSourceForm.reset();
+        loadDataSources();
+        showResult('Added successfully', 'success');
+      } else {
+        const error = await response.json();
+        showResult(error.error || 'Failed to add', 'error');
+      }
+    } catch (error) {
+      showResult('Failed to add', 'error');
+    }
+  });
+
+  refreshAllBtn?.addEventListener('click', async () => {
+    refreshAllBtn.disabled = true;
+    refreshAllBtn.textContent = 'Refreshing...';
+    try {
+      const response = await fetch('/api/integrations/refresh-prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json() as { results: Record<string, { success: boolean }> };
+      const results = Object.values(data.results);
+      const successCount = results.filter((r) => r.success).length;
+      showResult(`Refreshed ${successCount}/${results.length}`, 'success');
+      loadDataSources();
+    } catch (error) {
+      showResult('Failed to refresh', 'error');
+    } finally {
+      refreshAllBtn.disabled = false;
+      refreshAllBtn.textContent = 'Refresh All Prices';
+    }
+  });
+
+  syncRatesBtn?.addEventListener('click', async () => {
+    syncRatesBtn.disabled = true;
+    syncRatesBtn.textContent = 'Syncing...';
+    try {
+      const response = await fetch('/api/exchange-rates', { method: 'POST' });
+      const data = await response.json();
+      showResult(data.message || 'Synced', 'success');
+    } catch (error) {
+      showResult('Failed to sync', 'error');
+    } finally {
+      syncRatesBtn.disabled = false;
+      syncRatesBtn.textContent = 'Sync Exchange Rates';
+    }
+  });
+
+  testHealthBtn?.addEventListener('click', async () => {
+    testHealthBtn.disabled = true;
+    testHealthBtn.textContent = 'Testing...';
+    await loadHealthStatus();
+    testHealthBtn.disabled = false;
+    testHealthBtn.textContent = 'Test Connections';
+    showResult('Health updated', 'success');
+  });
+
+  function showResult(message: string, type: 'success' | 'error') {
+    if (actionResult) {
+      actionResult.classList.remove('hidden');
+      const p = actionResult.querySelector('p');
+      if (p) {
+        p.textContent = message;
+        p.className = 'text-sm ' + (type === 'success' ? 'text-green-600' : 'text-red-600');
+      }
+      setTimeout(() => actionResult.classList.add('hidden'), 5000);
+    }
+  }
+
+  (window as unknown as Record<string, (id: string) => Promise<void>>).syncSource = async (id: string) => {
+    try {
+      const response = await fetch(`/api/data-sources/${id}`, { method: 'POST' });
+      const data = await response.json();
+      showResult(data.message || 'Synced', 'success');
+      loadDataSources();
+    } catch (error) {
+      showResult('Failed to sync', 'error');
+    }
+  };
+
+  (window as unknown as Record<string, (id: string) => Promise<void>>).deleteSource = async (id: string) => {
+    if (!confirm('Are you sure?')) return;
+    try {
+      const response = await fetch(`/api/data-sources/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        showResult('Deleted', 'success');
+        loadDataSources();
+      } else {
+        showResult('Failed to delete', 'error');
+      }
+    } catch (error) {
+      showResult('Failed to delete', 'error');
+    }
+  };
+
+  loadHealthStatus();
+  loadDataSources();
+</script>

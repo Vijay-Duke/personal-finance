@@ -1,0 +1,13 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { CategoryRulesManager } from '../../components/settings/CategoryRulesManager';
+import { QueryProvider } from '../../components/providers/QueryProvider';
+---
+
+<AppLayout title="Category Rules - Settings">
+  <div class="container mx-auto py-8 max-w-4xl">
+    <QueryProvider client:load>
+      <CategoryRulesManager client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

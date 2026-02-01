@@ -18,6 +18,8 @@ import {
   ChevronDown,
   Menu,
   X,
+  Upload,
+  Repeat,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -62,7 +64,9 @@ const navigation: (NavItem | NavGroup)[] = [
       { name: 'Cashflow', href: '/cashflow', icon: <ArrowLeftRight className="h-5 w-5" /> },
       { name: 'Budgets', href: '/budgets', icon: <Receipt className="h-5 w-5" /> },
       { name: 'Goals', href: '/goals', icon: <Target className="h-5 w-5" /> },
+      { name: 'Recurring', href: '/recurring', icon: <Repeat className="h-5 w-5" /> },
       { name: 'Insurance', href: '/insurance', icon: <Shield className="h-5 w-5" /> },
+      { name: 'Import', href: '/import', icon: <Upload className="h-5 w-5" /> },
     ],
   },
 ];

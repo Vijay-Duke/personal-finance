@@ -56,9 +56,10 @@ export const sessions = sqliteTable('sessions', {
 });
 
 /**
- * Accounts table for OAuth providers (Better Auth).
+ * Auth Accounts table for OAuth providers (Better Auth).
+ * Named 'authAccounts' to avoid conflict with financial accounts.
  */
-export const accounts = sqliteTable('accounts', {
+export const authAccounts = sqliteTable('auth_accounts', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id')
     .notNull()
@@ -138,5 +139,11 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
-export type Account = typeof accounts.$inferSelect;
-export type NewAccount = typeof accounts.$inferInsert;
+export type AuthAccount = typeof authAccounts.$inferSelect;
+export type NewAuthAccount = typeof authAccounts.$inferInsert;
+export type Verification = typeof verifications.$inferSelect;
+export type NewVerification = typeof verifications.$inferInsert;
+export type TwoFactor = typeof twoFactors.$inferSelect;
+export type NewTwoFactor = typeof twoFactors.$inferInsert;
+export type Passkey = typeof passkeys.$inferSelect;
+export type NewPasskey = typeof passkeys.$inferInsert;

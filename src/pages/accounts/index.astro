@@ -1,0 +1,129 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
+---
+
+<AppLayout title="Accounts">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Accounts</h1>
+      <p class="text-muted-foreground">
+        Manage all your financial accounts in one place.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a href="/accounts/bank" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🏦</span>
+              Bank Accounts
+            </CardTitle>
+            <CardDescription>
+              Checking, savings, and money market accounts
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/stocks" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">📈</span>
+              Stocks
+            </CardTitle>
+            <CardDescription>
+              Individual stock holdings and brokerage accounts
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/crypto" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">₿</span>
+              Crypto
+            </CardTitle>
+            <CardDescription>
+              Cryptocurrency holdings across exchanges and wallets
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/real-estate" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🏠</span>
+              Real Estate
+            </CardTitle>
+            <CardDescription>
+              Property investments and rental income
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/debts" class="block group">
+        <Card className="h-full transition-colors hover:border-primary border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">💳</span>
+              Debts
+            </CardTitle>
+            <CardDescription>
+              Mortgages, loans, and credit cards
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/superannuation" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🏛️</span>
+              Superannuation
+            </CardTitle>
+            <CardDescription>
+              Retirement and pension accounts
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/personal-assets" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🚗</span>
+              Personal Assets
+            </CardTitle>
+            <CardDescription>
+              Vehicles, collectibles, and other valuables
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+
+      <a href="/accounts/business-assets" class="block group">
+        <Card className="h-full transition-colors hover:border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span class="text-xl">🏢</span>
+              Business Assets
+            </CardTitle>
+            <CardDescription>
+              Business ownership and equity stakes
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </a>
+    </div>
+  </div>
+</AppLayout>

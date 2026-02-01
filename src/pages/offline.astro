@@ -1,6 +1,5 @@
 ---
 import AuthLayout from '@/layouts/AuthLayout.astro';
-import { Button } from '@/components/ui';
 ---
 
 <AuthLayout title="Offline">
@@ -38,9 +37,9 @@ import { Button } from '@/components/ui';
     </p>
 
     <div class="space-y-3">
-      <Button
+      <button
         onclick="window.location.reload()"
-        className="w-full"
+        class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"
       >
         <svg
           class="h-4 w-4 mr-2"
@@ -56,7 +55,7 @@ import { Button } from '@/components/ui';
           />
         </svg>
         Try Again
-      </Button>
+      </button>
 
       <a
         href="/"

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "./button";
 
-interface OfflineIndicatorProps {
+export interface OfflineIndicatorProps {
   className?: string;
   showWhenOnline?: boolean;
 }

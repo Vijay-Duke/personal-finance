@@ -1,0 +1,20 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { InsuranceList } from '../components/insurance/InsuranceList';
+import { QueryProvider } from '../components/providers/QueryProvider';
+---
+
+<AppLayout title="Insurance">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Insurance</h1>
+      <p class="text-muted-foreground">
+        Track all your insurance policies and coverage.
+      </p>
+    </div>
+
+    <QueryProvider client:load>
+      <InsuranceList client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

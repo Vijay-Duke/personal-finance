@@ -1,0 +1,20 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { DebtsList } from '../../components/accounts/DebtsList';
+import { QueryProvider } from '../../components/providers/QueryProvider';
+---
+
+<AppLayout title="Debts & Liabilities">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Debts & Liabilities</h1>
+      <p class="text-muted-foreground">
+        Track mortgages, loans, credit cards, and other debts.
+      </p>
+    </div>
+
+    <QueryProvider client:load>
+      <DebtsList client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

@@ -123,7 +123,7 @@ export function createLanguageModel(config: ProviderConfig): LanguageModel {
       if (!apiKey) {
         throw new Error('API key is required for OpenAI provider');
       }
-      return openai.api(model);
+      return openai(model);
 
     case 'anthropic':
       if (!apiKey) {

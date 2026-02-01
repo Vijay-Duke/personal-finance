@@ -1,0 +1,20 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { SuperannuationList } from '../../components/accounts/SuperannuationList';
+import { QueryProvider } from '../../components/providers/QueryProvider';
+---
+
+<AppLayout title="Superannuation">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Superannuation & Retirement</h1>
+      <p class="text-muted-foreground">
+        Track your retirement savings, 401(k), IRA, and pension accounts.
+      </p>
+    </div>
+
+    <QueryProvider client:load>
+      <SuperannuationList client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

@@ -24,8 +24,10 @@ interface UserProfile {
   name: string | null;
   image: string | null;
   emailVerified: boolean;
-  householdId: string | null;
-  role: string;
+  twoFactorEnabled?: boolean | null;
+  // Extended properties from session enrichment (may not be present from raw auth)
+  householdId?: string | null;
+  role?: string;
 }
 
 export function AccountSettings() {

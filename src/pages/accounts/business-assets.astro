@@ -1,0 +1,20 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { BusinessAssetsList } from '../../components/accounts/BusinessAssetsList';
+import { QueryProvider } from '../../components/providers/QueryProvider';
+---
+
+<AppLayout title="Business Assets">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">Business Assets</h1>
+      <p class="text-muted-foreground">
+        Track business ownership, partnerships, equity stakes, and investments.
+      </p>
+    </div>
+
+    <QueryProvider client:load>
+      <BusinessAssetsList client:load />
+    </QueryProvider>
+  </div>
+</AppLayout>

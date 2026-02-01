@@ -1,5 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
-import { useChat } from '@ai-sdk/react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -31,26 +30,20 @@ interface ChatStatus {
   totalProviders: number;
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [chatStatus, setChatStatus] = useState<ChatStatus | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
-
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    error,
-    setMessages,
-  } = useChat({
-    api: '/api/ai/chat',
-    onError: (err) => {
-      console.error('Chat error:', err);
-    },
-  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch chat status on mount
   useEffect(() => {
@@ -84,7 +77,57 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
 
   const handleClearChat = () => {
     setMessages([]);
+    setError(null);
   };
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: ChatMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      const data = await res.json();
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: data.response || data.message || 'No response',
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, messages]);
+
+  const setSuggestion = useCallback((text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
+  }, []);
 
   const isConfigured = chatStatus?.hasActiveProvider;
 
@@ -176,22 +219,22 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
               <div className="flex flex-wrap justify-center gap-2">
                 <SuggestionChip
                   text="What's my net worth?"
-                  onClick={() => handleInputChange({ target: { value: "What's my net worth?" } } as any)}
+                  onClick={() => setSuggestion("What's my net worth?")}
                 />
                 <SuggestionChip
                   text="Analyze my spending"
-                  onClick={() => handleInputChange({ target: { value: "Analyze my spending patterns" } } as any)}
+                  onClick={() => setSuggestion("Analyze my spending patterns")}
                 />
                 <SuggestionChip
                   text="Investment advice"
-                  onClick={() => handleInputChange({ target: { value: "Give me investment advice" } } as any)}
+                  onClick={() => setSuggestion("Give me investment advice")}
                 />
               </div>
             </div>
           ) : (
             <>
               {messages.map((message, index) => (
-                <ChatMessage
+                <ChatMessageBubble
                   key={index}
                   role={message.role}
                   content={message.content}
@@ -248,7 +291,7 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
   );
 }
 
-function ChatMessage({ role, content }: { role: string; content: string }) {
+function ChatMessageBubble({ role, content }: { role: string; content: string }) {
   const isUser = role === 'user';
 
   return (
@@ -297,6 +340,7 @@ function SuggestionChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="rounded-full bg-content-bg border border-border px-3 py-1.5 text-sm text-text-secondary hover:bg-border hover:text-text-primary transition-colors"
     >
