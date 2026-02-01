@@ -1,6 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
-import { relations } from 'drizzle-orm';
 import { households } from './household';
 
 /**
@@ -40,13 +39,6 @@ export const aiProviders = sqliteTable('ai_providers', {
     .notNull()
     .default(sql`(unixepoch())`),
 });
-
-export const aiProvidersRelations = relations(aiProviders, ({ one }) => ({
-  household: one(households, {
-    fields: [aiProviders.householdId],
-    references: [households.id],
-  }),
-}));
 
 export type AIProvider = typeof aiProviders.$inferSelect;
 export type NewAIProvider = typeof aiProviders.$inferInsert;
