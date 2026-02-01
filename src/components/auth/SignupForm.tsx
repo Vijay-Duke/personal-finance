@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signUp } from '@/lib/auth/client';
+import { signUp, signIn, signOut } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,10 +38,27 @@ export function SignupForm() {
 
       if (result.error) {
         setError(result.error.message || 'Failed to create account');
-      } else {
-        // Redirect to dashboard on success
-        window.location.href = '/';
+        return;
       }
+
+      // Create household for the new user
+      const householdResponse = await fetch('/api/auth/setup-household', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ householdName: householdName || `${name}'s Household` }),
+      });
+
+      if (!householdResponse.ok) {
+        console.error('Failed to create household:', await householdResponse.text());
+        // Continue anyway - user can set up household later
+      }
+
+      // Sign out and sign back in to refresh the session with the new householdId
+      await signOut();
+      await signIn.email({ email, password });
+
+      // Redirect to dashboard on success
+      window.location.href = '/';
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {

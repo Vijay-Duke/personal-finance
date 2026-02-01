@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { signOut } from '@/lib/auth/client';
 
 interface NavItem {
   name: string;
@@ -329,7 +330,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
         {/* AI Assistant Quick Access */}
         <div className="px-3 py-2">
           <a
-            href="/ai"
+            href="/settings/ai"
             className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary-900/50 to-primary-800/30 border border-primary-700/30 text-primary-300 hover:from-primary-900/70 hover:to-primary-800/50 transition-all group"
           >
             <Sparkles className="h-5 w-5 text-primary-400 group-hover:animate-pulse" />
@@ -371,15 +372,17 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
                 </p>
                 <p className="truncate text-xs text-text-muted">{user.email}</p>
               </div>
-              <form action="/api/auth/sign-out" method="POST">
-                <button
-                  type="submit"
-                  className="rounded-lg p-2 text-text-muted hover:bg-sidebar-hover hover:text-danger transition-colors min-touch-target"
-                  title="Sign out"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  window.location.href = '/auth/login';
+                }}
+                className="rounded-lg p-2 text-text-muted hover:bg-sidebar-hover hover:text-danger transition-colors min-touch-target"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
           )}
         </div>

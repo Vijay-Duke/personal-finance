@@ -20,3 +20,4 @@ export { ImportPage } from './ImportPage';
 export { SettingsPage } from './SettingsPage';
 export { ProfilePage } from './ProfilePage';
 export { CategoryRulesPage } from './CategoryRulesPage';
+export { AISettingsPage } from './AISettingsPage';

@@ -1,0 +1,103 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import {
+  Wallet,
+  Building2,
+  TrendingUp,
+  Bitcoin,
+  PiggyBank,
+  Package,
+  Briefcase,
+  ArrowRight
+} from 'lucide-react';
+
+const accountTypes = [
+  {
+    name: 'Bank Account',
+    description: 'Checking, savings, and other cash accounts',
+    href: '/accounts/bank',
+    icon: 'Wallet',
+    color: 'bg-blue-500/10 text-blue-500',
+  },
+  {
+    name: 'Real Estate',
+    description: 'Properties, land, and real estate investments',
+    href: '/accounts/real-estate',
+    icon: 'Building2',
+    color: 'bg-emerald-500/10 text-emerald-500',
+  },
+  {
+    name: 'Stocks & ETFs',
+    description: 'Stock holdings and exchange-traded funds',
+    href: '/accounts/stocks',
+    icon: 'TrendingUp',
+    color: 'bg-purple-500/10 text-purple-500',
+  },
+  {
+    name: 'Cryptocurrency',
+    description: 'Bitcoin, Ethereum, and other digital assets',
+    href: '/accounts/crypto',
+    icon: 'Bitcoin',
+    color: 'bg-orange-500/10 text-orange-500',
+  },
+  {
+    name: 'Superannuation',
+    description: 'Retirement and pension accounts',
+    href: '/accounts/superannuation',
+    icon: 'PiggyBank',
+    color: 'bg-pink-500/10 text-pink-500',
+  },
+  {
+    name: 'Personal Assets',
+    description: 'Vehicles, jewelry, collectibles, and valuables',
+    href: '/accounts/personal-assets',
+    icon: 'Package',
+    color: 'bg-amber-500/10 text-amber-500',
+  },
+  {
+    name: 'Business Assets',
+    description: 'Business equity, equipment, and inventory',
+    href: '/accounts/business-assets',
+    icon: 'Briefcase',
+    color: 'bg-indigo-500/10 text-indigo-500',
+  },
+];
+---
+
+<AppLayout title="Add Asset">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold text-text-primary">Add Asset</h1>
+      <p class="mt-1 text-text-muted">Choose the type of asset you want to track.</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {accountTypes.map((type) => (
+        <a
+          href={type.href}
+          class="group flex flex-col rounded-xl border border-border-subtle bg-bg-surface p-5 hover:border-primary-500/50 hover:bg-bg-surface/80 transition-all"
+        >
+          <div class={`w-12 h-12 rounded-lg ${type.color} flex items-center justify-center mb-4`}>
+            {type.icon === 'Wallet' && <Wallet className="h-6 w-6" />}
+            {type.icon === 'Building2' && <Building2 className="h-6 w-6" />}
+            {type.icon === 'TrendingUp' && <TrendingUp className="h-6 w-6" />}
+            {type.icon === 'Bitcoin' && <Bitcoin className="h-6 w-6" />}
+            {type.icon === 'PiggyBank' && <PiggyBank className="h-6 w-6" />}
+            {type.icon === 'Package' && <Package className="h-6 w-6" />}
+            {type.icon === 'Briefcase' && <Briefcase className="h-6 w-6" />}
+          </div>
+          <h3 class="text-lg font-semibold text-text-primary group-hover:text-primary-500 transition-colors">
+            {type.name}
+          </h3>
+          <p class="mt-1 text-sm text-text-muted flex-1">
+            {type.description}
+          </p>
+          <div class="mt-4 flex items-center text-sm font-medium text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity">
+            Add {type.name.toLowerCase()}
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</AppLayout>
