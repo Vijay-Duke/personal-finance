@@ -1,22 +1,17 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro';
-import { TransactionsList } from '../components/transactions/TransactionsList';
-import { SpendingChart } from '../components/cashflow/SpendingChart';
-import { QueryProvider } from '../components/providers/QueryProvider';
+import { CashflowPage } from '../components/pages';
 ---
 
 <AppLayout title="Cashflow">
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Cashflow</h1>
-      <p class="text-muted-foreground">
+      <h1 class="text-2xl font-bold text-text-primary">Cashflow</h1>
+      <p class="text-text-muted">
         Track your income, expenses, and transfers across all accounts.
       </p>
     </div>
 
-    <QueryProvider client:only="react">
-      <SpendingChart months={6} />
-      <TransactionsList />
-    </QueryProvider>
+    <CashflowPage client:only="react" />
   </div>
 </AppLayout>

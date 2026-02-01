@@ -1,20 +1,17 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro';
-import { CSVImport } from '../components/import/CSVImport';
-import { QueryProvider } from '../components/providers/QueryProvider';
+import { ImportPage } from '../components/pages';
 ---
 
 <AppLayout title="Import Transactions">
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Import Transactions</h1>
-      <p class="text-muted-foreground">
+      <h1 class="text-2xl font-bold text-text-primary">Import Transactions</h1>
+      <p class="text-text-muted">
         Import transactions from your bank's CSV export.
       </p>
     </div>
 
-    <QueryProvider client:only="react">
-      <CSVImport />
-    </QueryProvider>
+    <ImportPage client:only="react" />
   </div>
 </AppLayout>

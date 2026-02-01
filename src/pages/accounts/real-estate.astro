@@ -1,20 +1,17 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
-import { RealEstateList } from '../../components/accounts/RealEstateList';
-import { QueryProvider } from '../../components/providers/QueryProvider';
+import { RealEstatePage } from '../../components/pages';
 ---
 
 <AppLayout title="Real Estate">
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Real Estate</h1>
-      <p class="text-muted-foreground">
+      <h1 class="text-2xl font-bold text-text-primary">Real Estate</h1>
+      <p class="text-text-muted">
         Track your properties, equity, and rental income.
       </p>
     </div>
 
-    <QueryProvider client:only="react">
-      <RealEstateList />
-    </QueryProvider>
+    <RealEstatePage client:only="react" />
   </div>
 </AppLayout>

@@ -1,20 +1,17 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro';
-import { BudgetsList } from '../components/budgets/BudgetsList';
-import { QueryProvider } from '../components/providers/QueryProvider';
+import { BudgetsPage } from '../components/pages';
 ---
 
 <AppLayout title="Budgets">
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">Budgets</h1>
-      <p class="text-muted-foreground">
+      <h1 class="text-2xl font-bold text-text-primary">Budgets</h1>
+      <p class="text-text-muted">
         Set spending limits and track your progress.
       </p>
     </div>
 
-    <QueryProvider client:only="react">
-      <BudgetsList />
-    </QueryProvider>
+    <BudgetsPage client:only="react" />
   </div>
 </AppLayout>
