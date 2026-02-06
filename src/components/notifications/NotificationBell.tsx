@@ -25,10 +25,21 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const response = await fetch('/api/notifications/mark-all-read');
+      const response = await fetch('/api/notifications?unreadOnly=true');
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data);
+        // Calculate counts from the notifications array
+        const notifications = Array.isArray(data) ? data : [];
+        const byPriority = {
+          urgent: notifications.filter((n: any) => n.priority === 'urgent').length,
+          high: notifications.filter((n: any) => n.priority === 'high').length,
+          normal: notifications.filter((n: any) => n.priority === 'normal').length,
+          low: notifications.filter((n: any) => n.priority === 'low').length,
+        };
+        setUnreadCount({
+          total: notifications.length,
+          byPriority,
+        });
       }
     } catch (error) {
       console.error('Error fetching notification count:', error);

@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Input } from '../ui/input';
+import { Select } from '../ui/select';
 import { Label } from '../ui/label';
+import { EmptyTransactions } from '../ui/empty-state';
 import { cn } from '@/lib/utils';
 import {
   ArrowUpRight,
@@ -12,7 +14,6 @@ import {
   Search,
   Filter,
   Plus,
-  Calendar,
   Tag as TagIcon,
   Trash2,
   X,
@@ -520,12 +521,11 @@ export function TransactionsList() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="accountId">Account *</Label>
-                  <select
+                  <Select
                     id="accountId"
                     name="accountId"
                     value={formData.accountId}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
                     <option value="">Select account</option>
@@ -534,18 +534,17 @@ export function TransactionsList() {
                         {account.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {formData.type === 'transfer' && (
                   <div className="space-y-2">
                     <Label htmlFor="transferAccountId">To Account *</Label>
-                    <select
+                    <Select
                       id="transferAccountId"
                       name="transferAccountId"
                       value={formData.transferAccountId}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       required
                     >
                       <option value="">Select destination</option>
@@ -556,7 +555,7 @@ export function TransactionsList() {
                             {account.name}
                           </option>
                         ))}
-                    </select>
+                    </Select>
                   </div>
                 )}
 
@@ -588,20 +587,20 @@ export function TransactionsList() {
 
                 <div className="space-y-2">
                   <Label htmlFor="categoryId">Category</Label>
-                  <select
+                  <Select
                     id="categoryId"
                     name="categoryId"
                     value={formData.categoryId}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    hint="Optional - helps organize your transactions"
                   >
-                    <option value="">Select category</option>
+                    <option value="">No category</option>
                     {filteredCategories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -646,16 +645,8 @@ export function TransactionsList() {
       {/* Transactions List */}
       {groupedTransactions.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <Calendar className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium">No transactions yet</p>
-              <p className="text-sm mt-1">Add your first transaction to start tracking your finances.</p>
-              <Button onClick={() => setShowAddForm(true)} className="mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Transaction
-              </Button>
-            </div>
+          <CardContent className="py-8">
+            <EmptyTransactions onAdd={() => setShowAddForm(true)} />
           </CardContent>
         </Card>
       ) : (
@@ -747,6 +738,7 @@ export function TransactionsList() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground"
+                        aria-label="Delete transaction"
                         onClick={() => {
                           if (confirm('Are you sure you want to delete this transaction?')) {
                             deleteMutation.mutate(tx.id);

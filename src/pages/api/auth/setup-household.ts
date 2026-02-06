@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { db } from '@/lib/db';
-import { households, users } from '@/lib/db/schema';
+import { households, users, categories, defaultCategories } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { getSession } from '@/lib/auth/session';
 import { json, error, unauthorized } from '@/lib/api/response';
@@ -37,6 +37,19 @@ export const POST: APIRoute = async (context) => {
       name: householdName,
       primaryCurrency: 'AUD', // Default for Australian users
     });
+
+    // Seed default categories for the new household
+    const categoryValues = defaultCategories.map((cat, index) => ({
+      householdId,
+      name: cat.name,
+      type: cat.type,
+      icon: cat.icon,
+      color: cat.color,
+      isSystem: cat.name === 'Uncategorized', // Mark Uncategorized as system category
+      sortOrder: index + 1,
+    }));
+
+    await db.insert(categories).values(categoryValues);
 
     // Update the user with the household ID and set them as owner
     await db

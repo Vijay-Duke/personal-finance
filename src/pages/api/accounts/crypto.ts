@@ -68,6 +68,7 @@ export const GET: APIRoute = async (context) => {
         walletName: cryptoAssets.walletName,
         isStaked: cryptoAssets.isStaked,
         stakingApy: cryptoAssets.stakingApy,
+        logo: cryptoAssets.logo,
       })
       .from(accounts)
       .leftJoin(cryptoAssets, eq(accounts.id, cryptoAssets.accountId))
@@ -170,6 +171,7 @@ export const POST: APIRoute = async (context) => {
       walletName: body.walletName,
       isStaked: body.isStaked ?? false,
       stakingApy: body.stakingApy || 0,
+      logo: body.logo,
     };
 
     const [cryptoDetail] = await db.insert(cryptoAssets).values(cryptoData).returning();

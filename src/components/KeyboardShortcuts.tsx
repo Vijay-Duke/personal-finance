@@ -59,8 +59,10 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
         event.target instanceof HTMLTextAreaElement ||
         (event.target as HTMLElement)?.isContentEditable
       ) {
-        // Allow Escape and Cmd/Ctrl+K even in inputs
-        if (event.key !== 'Escape' && !(event.metaKey || event.ctrlKey) && event.key !== 'k') {
+        // Only allow Escape and Cmd/Ctrl+K in inputs, block all other shortcuts
+        const isEscape = event.key === 'Escape';
+        const isCmdK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+        if (!isEscape && !isCmdK) {
           return;
         }
       }
@@ -219,19 +221,19 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div 
-        className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl"
+      <div
+        className="bg-card-bg border border-border rounded-lg max-w-lg w-full p-6 shadow-xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Keyboard Shortcuts</h2>
-          <button 
+          <h2 className="text-xl font-bold text-text-primary">Keyboard Shortcuts</h2>
+          <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-text-muted hover:text-text-primary transition-colors"
           >
             <span className="sr-only">Close</span>
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -243,12 +245,12 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
         <div className="space-y-4">
           {navigation.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Navigation</h3>
+              <h3 className="text-sm font-semibold text-text-muted uppercase mb-2">Navigation</h3>
               <div className="space-y-1">
                 {navigation.map((s, i) => (
                   <div key={i} className="flex justify-between items-center py-1">
-                    <span className="text-gray-700">{s.description}</span>
-                    <kbd className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                    <span className="text-text-secondary">{s.description}</span>
+                    <kbd className="px-2 py-1 bg-content-bg border border-border rounded text-sm font-mono text-text-muted">
                       {formatShortcut(s)}
                     </kbd>
                   </div>
@@ -259,12 +261,12 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
 
           {actions.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Actions</h3>
+              <h3 className="text-sm font-semibold text-text-muted uppercase mb-2">Actions</h3>
               <div className="space-y-1">
                 {actions.map((s, i) => (
                   <div key={i} className="flex justify-between items-center py-1">
-                    <span className="text-gray-700">{s.description}</span>
-                    <kbd className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                    <span className="text-text-secondary">{s.description}</span>
+                    <kbd className="px-2 py-1 bg-content-bg border border-border rounded text-sm font-mono text-text-muted">
                       {formatShortcut(s)}
                     </kbd>
                   </div>
@@ -275,12 +277,12 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
 
           {other.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">General</h3>
+              <h3 className="text-sm font-semibold text-text-muted uppercase mb-2">General</h3>
               <div className="space-y-1">
                 {other.map((s, i) => (
                   <div key={i} className="flex justify-between items-center py-1">
-                    <span className="text-gray-700">{s.description}</span>
-                    <kbd className="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                    <span className="text-text-secondary">{s.description}</span>
+                    <kbd className="px-2 py-1 bg-content-bg border border-border rounded text-sm font-mono text-text-muted">
                       {formatShortcut(s)}
                     </kbd>
                   </div>
@@ -290,8 +292,8 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
           )}
         </div>
 
-        <p className="mt-4 text-sm text-gray-500 text-center">
-          Press <kbd className="px-1 bg-gray-100 rounded">?</kbd> anytime to show this help
+        <p className="mt-4 text-sm text-text-muted text-center">
+          Press <kbd className="px-1 bg-content-bg border border-border rounded text-text-muted">?</kbd> anytime to show this help
         </p>
       </div>
     </div>
@@ -304,17 +306,24 @@ function ShortcutsHelpModal({ onClose, shortcuts }: { onClose: () => void; short
 export function useShortcut(key: string, action: () => void, modifiers?: ('ctrl' | 'meta' | 'alt' | 'shift')[]) {
   const { registerShortcut, unregisterShortcut } = useKeyboardShortcuts();
 
+  // Use ref to store action to avoid re-registration on every render
+  const actionRef = React.useRef(action);
+  actionRef.current = action;
+
+  // Memoize modifiers array to prevent unnecessary re-runs
+  const modifiersKey = modifiers?.join('-') || '';
+
   useEffect(() => {
-    const shortcutKey = `${modifiers?.join('-') || ''}${key}`;
+    const shortcutKey = `${modifiersKey}${key}`;
     registerShortcut({
       key,
       modifiers,
       description: '',
-      action,
+      action: () => actionRef.current(),
     });
 
     return () => unregisterShortcut(shortcutKey);
-  }, [key, action, modifiers, registerShortcut, unregisterShortcut]);
+  }, [key, modifiersKey, registerShortcut, unregisterShortcut]);
 }
 
 export default KeyboardShortcutsProvider;

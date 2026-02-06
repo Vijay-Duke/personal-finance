@@ -1,0 +1,5 @@
+[test]
+# Use happy-dom for DOM APIs
+preload = ["./src/test/bun-setup.ts"]
+# Only run tests in src directory (not e2e)
+root = "./src"

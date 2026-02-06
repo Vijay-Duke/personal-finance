@@ -38,54 +38,57 @@ export const GET: APIRoute = async (context) => {
   try {
     const householdId = session.user.householdId;
 
-    // Fetch all active accounts for this household
-    const allAccounts = await db
-      .select({
-        id: accounts.id,
-        type: accounts.type,
-        currentBalance: accounts.currentBalance,
-        isActive: accounts.isActive,
-        includeInNetWorth: accounts.includeInNetWorth,
-      })
-      .from(accounts)
-      .where(
-        and(
-          eq(accounts.householdId, householdId),
-          eq(accounts.isActive, true)
-        )
-      );
+    // Fetch all data in parallel for better performance
+    const [allAccounts, stockHoldings, cryptoHoldings] = await Promise.all([
+      // Fetch all active accounts for this household
+      db
+        .select({
+          id: accounts.id,
+          type: accounts.type,
+          currentBalance: accounts.currentBalance,
+          isActive: accounts.isActive,
+          includeInNetWorth: accounts.includeInNetWorth,
+        })
+        .from(accounts)
+        .where(
+          and(
+            eq(accounts.householdId, householdId),
+            eq(accounts.isActive, true)
+          )
+        ),
 
-    // Fetch stock details for market value calculation
-    const stockHoldings = await db
-      .select({
-        accountId: stocks.accountId,
-        shares: stocks.shares,
-        currentPrice: stocks.currentPrice,
-      })
-      .from(stocks)
-      .innerJoin(accounts, eq(stocks.accountId, accounts.id))
-      .where(
-        and(
-          eq(accounts.householdId, householdId),
-          eq(accounts.isActive, true)
-        )
-      );
+      // Fetch stock details for market value calculation
+      db
+        .select({
+          accountId: stocks.accountId,
+          shares: stocks.shares,
+          currentPrice: stocks.currentPrice,
+        })
+        .from(stocks)
+        .innerJoin(accounts, eq(stocks.accountId, accounts.id))
+        .where(
+          and(
+            eq(accounts.householdId, householdId),
+            eq(accounts.isActive, true)
+          )
+        ),
 
-    // Fetch crypto details for market value calculation
-    const cryptoHoldings = await db
-      .select({
-        accountId: cryptoAssets.accountId,
-        holdings: cryptoAssets.holdings,
-        currentPrice: cryptoAssets.currentPrice,
-      })
-      .from(cryptoAssets)
-      .innerJoin(accounts, eq(cryptoAssets.accountId, accounts.id))
-      .where(
-        and(
-          eq(accounts.householdId, householdId),
-          eq(accounts.isActive, true)
-        )
-      );
+      // Fetch crypto details for market value calculation
+      db
+        .select({
+          accountId: cryptoAssets.accountId,
+          holdings: cryptoAssets.holdings,
+          currentPrice: cryptoAssets.currentPrice,
+        })
+        .from(cryptoAssets)
+        .innerJoin(accounts, eq(cryptoAssets.accountId, accounts.id))
+        .where(
+          and(
+            eq(accounts.householdId, householdId),
+            eq(accounts.isActive, true)
+          )
+        ),
+    ]);
 
     // Create lookup maps for investment values
     const stockValueMap = new Map<string, number>();

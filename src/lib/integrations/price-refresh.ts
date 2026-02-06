@@ -87,9 +87,20 @@ export async function refreshStockPrices(householdId: string): Promise<{
     const quotes = await yahooFinance.getQuotes(symbols);
     const priceMap = new Map(quotes.map(q => [q.symbol, q]));
 
-    // Update each stock account
-    let updated = 0;
+    // Collect batch updates for better performance
     const today = formatDate(new Date());
+    const now = new Date();
+    const stockUpdates: Promise<unknown>[] = [];
+    const accountUpdates: Promise<unknown>[] = [];
+    const valuationInserts: Array<{
+      accountId: string;
+      date: string;
+      value: number;
+      currency: string;
+      source: 'api';
+      underlyingPrice: number;
+      quantity: number;
+    }> = [];
 
     for (const { account, stock } of allStocks) {
       if (!stock?.symbol) continue;
@@ -104,25 +115,27 @@ export async function refreshStockPrices(householdId: string): Promise<{
       const shares = stock.shares || 0;
       const currentValue = shares * currentPrice;
 
-      // Update stock record with current price
-      await db.update(stocks)
-        .set({
-          currentPrice,
-          priceUpdatedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(stocks.accountId, account.id));
+      // Collect update operations
+      stockUpdates.push(
+        db.update(stocks)
+          .set({
+            currentPrice,
+            priceUpdatedAt: now,
+            updatedAt: now,
+          })
+          .where(eq(stocks.accountId, account.id))
+      );
 
-      // Update account balance
-      await db.update(accounts)
-        .set({
-          currentBalance: currentValue,
-          updatedAt: new Date(),
-        })
-        .where(eq(accounts.id, account.id));
+      accountUpdates.push(
+        db.update(accounts)
+          .set({
+            currentBalance: currentValue,
+            updatedAt: now,
+          })
+          .where(eq(accounts.id, account.id))
+      );
 
-      // Record valuation history
-      await db.insert(valuationHistory).values({
+      valuationInserts.push({
         accountId: account.id,
         date: today,
         value: currentValue,
@@ -133,8 +146,18 @@ export async function refreshStockPrices(householdId: string): Promise<{
       });
 
       prices[stock.symbol] = currentPrice;
-      updated++;
     }
+
+    // Execute all updates in parallel
+    await Promise.all([
+      ...stockUpdates,
+      ...accountUpdates,
+      valuationInserts.length > 0
+        ? db.insert(valuationHistory).values(valuationInserts)
+        : Promise.resolve(),
+    ]);
+
+    const updated = valuationInserts.length;
 
     // Update data source last sync
     await db.update(dataSources)
@@ -208,9 +231,20 @@ export async function refreshCryptoPrices(householdId: string): Promise<{
     // Fetch prices from CoinGecko
     const priceData = await coinGecko.getPrice(coinIds, ['usd']);
 
-    // Update each crypto account
-    let updated = 0;
+    // Collect batch updates for better performance
     const today = formatDate(new Date());
+    const now = new Date();
+    const cryptoUpdates: Promise<unknown>[] = [];
+    const accountUpdates: Promise<unknown>[] = [];
+    const valuationInserts: Array<{
+      accountId: string;
+      date: string;
+      value: number;
+      currency: string;
+      source: 'api';
+      underlyingPrice: number;
+      quantity: number;
+    }> = [];
 
     for (const { account, crypto } of allCrypto) {
       if (!crypto?.coingeckoId || !crypto?.symbol) continue;
@@ -225,25 +259,27 @@ export async function refreshCryptoPrices(householdId: string): Promise<{
       const holdings = crypto.holdings || 0;
       const currentValue = holdings * currentPrice;
 
-      // Update crypto record with current price
-      await db.update(cryptoAssets)
-        .set({
-          currentPrice,
-          priceUpdatedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(cryptoAssets.accountId, account.id));
+      // Collect update operations
+      cryptoUpdates.push(
+        db.update(cryptoAssets)
+          .set({
+            currentPrice,
+            priceUpdatedAt: now,
+            updatedAt: now,
+          })
+          .where(eq(cryptoAssets.accountId, account.id))
+      );
 
-      // Update account balance
-      await db.update(accounts)
-        .set({
-          currentBalance: currentValue,
-          updatedAt: new Date(),
-        })
-        .where(eq(accounts.id, account.id));
+      accountUpdates.push(
+        db.update(accounts)
+          .set({
+            currentBalance: currentValue,
+            updatedAt: now,
+          })
+          .where(eq(accounts.id, account.id))
+      );
 
-      // Record valuation history
-      await db.insert(valuationHistory).values({
+      valuationInserts.push({
         accountId: account.id,
         date: today,
         value: currentValue,
@@ -254,8 +290,18 @@ export async function refreshCryptoPrices(householdId: string): Promise<{
       });
 
       prices[crypto.symbol] = currentPrice;
-      updated++;
     }
+
+    // Execute all updates in parallel
+    await Promise.all([
+      ...cryptoUpdates,
+      ...accountUpdates,
+      valuationInserts.length > 0
+        ? db.insert(valuationHistory).values(valuationInserts)
+        : Promise.resolve(),
+    ]);
+
+    const updated = valuationInserts.length;
 
     // Update data source last sync
     await db.update(dataSources)

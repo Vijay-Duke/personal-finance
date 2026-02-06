@@ -22,9 +22,11 @@ import {
   Repeat,
   Plus,
   Sparkles,
+  FolderOpen,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { signOut } from '@/lib/auth/client';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface NavItem {
   name: string;
@@ -56,6 +58,11 @@ const navigation: (NavItem | NavGroup)[] = [
     name: 'Dashboard',
     href: '/',
     icon: <LayoutDashboard className="h-5 w-5" />,
+  },
+  {
+    name: 'Accounts',
+    href: '/accounts',
+    icon: <FolderOpen className="h-5 w-5" />,
   },
   {
     name: 'Assets',
@@ -116,6 +123,11 @@ function NavGroupComponent({
     currentPath.startsWith(item.href)
   );
   const [isOpen, setIsOpen] = useState(isActiveInGroup);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Map href to count key
   const getCountForHref = (href: string): number => {
@@ -135,29 +147,30 @@ function NavGroupComponent({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center">
+      {/* Section Header with improved design */}
+      <div className="flex items-center gap-0.5 px-2">
+        {/* Expand/Collapse Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex flex-1 items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-text-muted hover:text-sidebar-text transition-colors min-touch-target"
+          className="group flex flex-1 items-center justify-between py-2 pl-2 pr-1.5 text-xs font-semibold uppercase tracking-wider text-sidebar-text-muted hover:text-sidebar-text transition-all min-touch-target rounded-md hover:bg-sidebar-hover/80"
           aria-expanded={isOpen}
         >
-          <span>{group.name}</span>
-          <ChevronRight
-            className={cn(
-              'h-4 w-4 transition-transform duration-200',
-              isOpen && 'rotate-90'
+          <span className="leading-none">{group.name}</span>
+          <span className={cn(
+            "flex items-center justify-center w-5 h-5 rounded transition-colors",
+            "group-hover:bg-sidebar-hover"
+          )}>
+            {mounted && (
+              <ChevronRight
+                className={cn(
+                  'h-3.5 w-3.5 text-sidebar-text-muted transition-transform duration-200',
+                  isOpen && 'rotate-90'
+                )}
+                strokeWidth={2.5}
+              />
             )}
-          />
+          </span>
         </button>
-        {group.addHref && (
-          <a
-            href={group.addHref}
-            className="p-2 text-sidebar-text-muted hover:text-primary-500 hover:bg-sidebar-hover rounded-lg transition-colors mr-1"
-            title={`Add ${group.name.toLowerCase()}`}
-          >
-            <Plus className="h-4 w-4" />
-          </a>
-        )}
       </div>
       <div
         className={cn(
@@ -176,13 +189,13 @@ function NavGroupComponent({
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-150 min-touch-target',
                 isActive
-                  ? 'bg-sidebar-active text-white shadow-md'
+                  ? 'bg-sidebar-active text-sidebar-text shadow-md'
                   : 'text-sidebar-text hover:bg-sidebar-hover hover:translate-x-0.5'
               )}
             >
               <span className={cn(
                 'flex-shrink-0 transition-colors',
-                isActive ? 'text-primary-300' : 'text-sidebar-text-muted'
+                isActive ? 'text-primary-500' : 'text-sidebar-text-muted'
               )}>
                 {item.icon}
               </span>
@@ -191,6 +204,19 @@ function NavGroupComponent({
             </a>
           );
         })}
+        
+        {/* Add action at the bottom of expanded section */}
+        {group.addHref && (
+          <a
+            href={group.addHref}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-all duration-150 min-touch-target mt-1"
+          >
+            {mounted && (
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+            )}
+            <span className="flex-1">Add {group.name}</span>
+          </a>
+        )}
       </div>
     </div>
   );
@@ -212,6 +238,7 @@ interface SidebarProps {
 export function Sidebar({ currentPath, user }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const counts = getAccountCounts();
+  const mobileFocusTrapRef = useFocusTrap(isMobileMenuOpen);
 
   // Close mobile menu when clicking a link
   const handleLinkClick = () => {
@@ -263,6 +290,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
+        ref={mobileFocusTrapRef}
         className={cn(
           'sidebar flex flex-col transition-transform duration-300',
           'lg:translate-x-0',
@@ -326,17 +354,6 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
             );
           })}
         </nav>
-
-        {/* AI Assistant Quick Access */}
-        <div className="px-3 py-2">
-          <a
-            href="/settings/ai"
-            className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm bg-gradient-to-r from-primary-900/50 to-primary-800/30 border border-primary-700/30 text-primary-300 hover:from-primary-900/70 hover:to-primary-800/50 transition-all group"
-          >
-            <Sparkles className="h-5 w-5 text-primary-400 group-hover:animate-pulse" />
-            <span className="font-medium">AI Assistant</span>
-          </a>
-        </div>
 
         {/* Settings & User */}
         <div className="border-t border-border-subtle p-3 space-y-2" onClick={handleLinkClick}>

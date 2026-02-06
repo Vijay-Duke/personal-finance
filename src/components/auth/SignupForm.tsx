@@ -60,7 +60,8 @@ export function SignupForm() {
       // Redirect to dashboard on success
       window.location.href = '/';
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error('Signup error:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -89,6 +90,7 @@ export function SignupForm() {
             onChange={(e) => setName(e.target.value)}
             placeholder="John Doe"
             required
+            autoComplete="name"
             className="mt-1"
           />
         </div>
@@ -102,6 +104,7 @@ export function SignupForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
+            autoComplete="email"
             className="mt-1"
           />
         </div>
@@ -131,6 +134,7 @@ export function SignupForm() {
             placeholder="••••••••"
             required
             minLength={8}
+            autoComplete="new-password"
             className="mt-1"
           />
         </div>
@@ -144,6 +148,7 @@ export function SignupForm() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
             required
+            autoComplete="new-password"
             className="mt-1"
           />
         </div>

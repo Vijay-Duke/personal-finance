@@ -133,17 +133,18 @@ export function QuickAddFAB() {
   return (
     <div
       className={cn(
-        'fab-container fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3',
-        'transition-transform duration-300 ease-out',
+        'fab-container fixed bottom-6 right-6 z-30 flex flex-col items-end gap-3',
+        'transition-transform duration-300 ease-out pointer-events-none',
+        'lg:hidden', // Only show on mobile/tablet, hide on desktop
         !isVisible && 'translate-y-24'
       )}
     >
       {/* Action buttons */}
       <div
         className={cn(
-          'flex flex-col items-end gap-3 transition-all duration-300',
+          'flex flex-col items-end gap-3 transition-all duration-300 pointer-events-auto',
           isOpen
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-10 pointer-events-none'
         )}
       >
@@ -189,9 +190,9 @@ export function QuickAddFAB() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'flex items-center justify-center w-14 h-14 rounded-full shadow-xl',
-          'bg-slate-900 text-white transition-all duration-300',
-          'hover:bg-slate-800 hover:scale-105 active:scale-95',
-          isOpen && 'rotate-45 bg-slate-700'
+          'bg-primary-500 text-white transition-all duration-300',
+          'hover:bg-primary-600 hover:scale-105 active:scale-95 pointer-events-auto',
+          isOpen && 'rotate-45 bg-primary-700'
         )}
         aria-label={isOpen ? 'Close menu' : 'Quick add'}
         aria-expanded={isOpen}
@@ -203,9 +204,9 @@ export function QuickAddFAB() {
         )}
       </button>
 
-      {/* Keyboard shortcut hint */}
+      {/* Keyboard shortcut hint - only show briefly on first load, then hide */}
       {!isOpen && (
-        <kbd className="hidden sm:block absolute -top-8 right-0 px-2 py-1 text-xs text-slate-500 bg-white rounded shadow border border-slate-200">
+        <kbd className="hidden absolute -top-8 right-0 px-2 py-1 text-xs text-text-muted bg-card-bg rounded shadow border border-border animate-fade-out">
           N
         </kbd>
       )}

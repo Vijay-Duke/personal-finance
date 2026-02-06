@@ -1,6 +1,14 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro';
 import { BudgetsPage } from '../components/pages';
+import { getSession } from '@/lib/auth/session';
+
+const session = await getSession(Astro);
+
+// Redirect to login if not authenticated
+if (!session) {
+  return Astro.redirect('/auth/login');
+}
 ---
 
 <AppLayout title="Budgets">

@@ -17,7 +17,33 @@ export const mockDb = {
   close: vi.fn(),
 };
 
-// Mock drizzle-orm
+// Create a chainable mock that supports any method chain
+function createChainableMock(returnValue: unknown = []) {
+  const chainable: Record<string, ReturnType<typeof vi.fn>> = {};
+  const handler: ProxyHandler<typeof chainable> = {
+    get(target, prop: string) {
+      if (prop === 'then') return undefined; // Not a promise
+      if (!target[prop]) {
+        target[prop] = vi.fn().mockImplementation(() => {
+          return new Proxy(chainable, handler);
+        });
+      }
+      return target[prop];
+    },
+  };
+  // The final result when awaited or used
+  const proxy = new Proxy(chainable, handler);
+  // Make it iterable when used with spread or for...of
+  Object.defineProperty(proxy, Symbol.iterator, {
+    value: function* () {
+      yield* returnValue as Iterable<unknown>;
+    },
+    enumerable: false,
+  });
+  return proxy;
+}
+
+// Mock drizzle-orm with comprehensive chainable API
 export const mockDrizzleDb = {
   query: {
     users: { findFirst: vi.fn(), findMany: vi.fn() },
@@ -30,28 +56,20 @@ export const mockDrizzleDb = {
   },
   insert: vi.fn().mockReturnValue({
     values: vi.fn().mockReturnValue({
-      returning: vi.fn().mockReturnValue([]),
-      onConflictDoNothing: vi.fn().mockReturnValue({ returning: vi.fn().mockReturnValue([]) }),
-      onConflictDoUpdate: vi.fn().mockReturnValue({ returning: vi.fn().mockReturnValue([]) }),
+      returning: vi.fn().mockResolvedValue([]),
+      onConflictDoNothing: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }),
+      onConflictDoUpdate: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }),
     }),
   }),
   update: vi.fn().mockReturnValue({
     set: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({ returning: vi.fn().mockReturnValue([]) }),
+      where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }),
     }),
   }),
   delete: vi.fn().mockReturnValue({
-    where: vi.fn().mockReturnValue({}),
+    where: vi.fn().mockResolvedValue({}),
   }),
-  select: vi.fn().mockReturnValue({
-    from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        orderBy: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue([]),
-        }),
-      }),
-    }),
-  }),
+  select: vi.fn().mockReturnValue(createChainableMock([])),
 };
 
 vi.mock('@/lib/db', () => ({

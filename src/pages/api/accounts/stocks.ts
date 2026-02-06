@@ -65,6 +65,7 @@ export const GET: APIRoute = async (context) => {
         brokerAccountId: stocks.brokerAccountId,
         dividendYield: stocks.dividendYield,
         lastDividendDate: stocks.lastDividendDate,
+        logo: stocks.logo,
       })
       .from(accounts)
       .leftJoin(stocks, eq(accounts.id, stocks.accountId))
@@ -152,6 +153,7 @@ export const POST: APIRoute = async (context) => {
       symbol,
       exchange: body.exchange,
       securityName: body.securityName,
+      logo: body.logo,
       shares,
       avgCostBasis,
       totalCostBasis,

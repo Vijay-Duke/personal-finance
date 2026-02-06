@@ -202,7 +202,7 @@ export function DonutChart({
             strokeDashoffset={segment.strokeDashoffset}
             strokeLinecap="butt"
             className={cn(
-              "transition-all duration-300 cursor-pointer",
+              "transition-[stroke-width,filter] duration-300 cursor-pointer",
               hoveredIndex === index ? "filter drop-shadow-lg" : ""
             )}
             style={{
@@ -220,7 +220,7 @@ export function DonutChart({
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           {hoveredSegment ? (
             <>
-              <span className="text-xl font-bold text-text-primary transition-all">
+              <span className="text-lg font-bold text-text-primary transition-opacity max-w-[70%] text-center leading-tight">
                 {(hoveredSegment.percent * 100).toFixed(1)}%
               </span>
               <span className="text-xs text-text-muted truncate max-w-[80%] text-center">
@@ -230,7 +230,9 @@ export function DonutChart({
           ) : (
             <>
               {centerValue && (
-                <span className="text-xl font-bold text-text-primary">{centerValue}</span>
+                <span className="text-lg font-bold text-text-primary max-w-[70%] text-center leading-tight">
+                  {centerValue}
+                </span>
               )}
               {centerLabel && (
                 <span className="text-xs text-text-muted">{centerLabel}</span>

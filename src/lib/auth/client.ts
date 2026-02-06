@@ -6,7 +6,7 @@ import { twoFactorClient } from 'better-auth/client/plugins';
  * Provides hooks and methods for authentication in the browser.
  */
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.PUBLIC_BETTER_AUTH_URL || 'http://localhost:4321',
+  baseURL: '', // Use relative URLs - works on any port/host
   plugins: [
     twoFactorClient(),
   ],

@@ -87,37 +87,37 @@ const illustrations = {
   accounts: (
     <svg
       viewBox="0 0 200 200"
-      className="w-32 h-32 text-text-muted"
+      className="w-32 h-32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Piggy body */}
-      <ellipse cx="100" cy="110" rx="55" ry="45" className="fill-bg-surface stroke-border" strokeWidth="2" />
+      {/* Piggy body - using primary-100/200 for light fill with subtle gradient effect */}
+      <ellipse cx="100" cy="110" rx="55" ry="45" className="fill-primary-200 stroke-primary-400" strokeWidth="2" />
       {/* Piggy head */}
-      <circle cx="145" cy="95" r="25" className="fill-bg-surface stroke-border" strokeWidth="2" />
-      {/* Snout */}
-      <ellipse cx="165" cy="100" rx="10" ry="8" className="fill-primary-900 stroke-border" strokeWidth="2" />
-      <circle cx="162" cy="98" r="2" className="fill-border" />
-      <circle cx="168" cy="98" r="2" className="fill-border" />
+      <circle cx="145" cy="95" r="25" className="fill-primary-200 stroke-primary-400" strokeWidth="2" />
+      {/* Snout - darker shade for contrast */}
+      <ellipse cx="165" cy="100" rx="10" ry="8" className="fill-primary-400 stroke-primary-500" strokeWidth="2" />
+      <circle cx="162" cy="98" r="2" className="fill-primary-700" />
+      <circle cx="168" cy="98" r="2" className="fill-primary-700" />
       {/* Eye */}
       <circle cx="140" cy="88" r="4" className="fill-text-primary" />
-      <circle cx="141" cy="87" r="1.5" className="fill-bg-surface" />
+      <circle cx="141" cy="87" r="1.5" className="fill-bg-elevated" />
       {/* Ear */}
-      <ellipse cx="135" cy="72" rx="8" ry="12" className="fill-bg-surface stroke-border" strokeWidth="2" />
+      <ellipse cx="135" cy="72" rx="8" ry="12" className="fill-primary-300 stroke-primary-400" strokeWidth="2" />
       {/* Legs */}
-      <rect x="60" y="140" width="12" height="20" rx="4" className="fill-bg-surface stroke-border" strokeWidth="2" />
-      <rect x="85" y="145" width="12" height="15" rx="4" className="fill-bg-surface stroke-border" strokeWidth="2" />
-      <rect x="110" y="145" width="12" height="15" rx="4" className="fill-bg-surface stroke-border" strokeWidth="2" />
-      <rect x="135" y="140" width="12" height="20" rx="4" className="fill-bg-surface stroke-border" strokeWidth="2" />
+      <rect x="60" y="140" width="12" height="20" rx="4" className="fill-primary-300 stroke-primary-400" strokeWidth="2" />
+      <rect x="85" y="145" width="12" height="15" rx="4" className="fill-primary-300 stroke-primary-400" strokeWidth="2" />
+      <rect x="110" y="145" width="12" height="15" rx="4" className="fill-primary-300 stroke-primary-400" strokeWidth="2" />
+      <rect x="135" y="140" width="12" height="20" rx="4" className="fill-primary-300 stroke-primary-400" strokeWidth="2" />
       {/* Tail */}
       <path
         d="M45 105 Q35 100 38 90 Q42 95 45 100"
-        className="stroke-border"
+        className="stroke-primary-400"
         strokeWidth="2"
         fill="none"
       />
       {/* Coin slot */}
-      <rect x="90" y="68" width="25" height="4" rx="2" className="fill-primary-600" />
+      <rect x="90" y="68" width="25" height="4" rx="2" className="fill-primary-500" />
       {/* Coin hovering - animated */}
       <g>
         <animateTransform
@@ -127,9 +127,9 @@ const illustrations = {
           dur="1.5s"
           repeatCount="indefinite"
         />
-        <ellipse cx="102" cy="55" rx="10" ry="3" className="fill-primary-500 opacity-40" />
-        <circle cx="102" cy="50" r="12" className="fill-primary-500 stroke-primary-600" strokeWidth="2" />
-        <text x="102" y="54" textAnchor="middle" className="fill-primary-900 text-xs font-bold">$</text>
+        <ellipse cx="102" cy="55" rx="10" ry="3" className="fill-primary-400 opacity-50" />
+        <circle cx="102" cy="50" r="12" className="fill-primary-400 stroke-primary-500" strokeWidth="2" />
+        <text x="102" y="54" textAnchor="middle" className="fill-primary-800" style={{ fontSize: '12px', fontWeight: 'bold' }}>$</text>
       </g>
     </svg>
   ),

@@ -10,6 +10,14 @@ import {
   Briefcase,
   ArrowRight
 } from 'lucide-react';
+import { getSession } from '@/lib/auth/session';
+
+const session = await getSession(Astro);
+
+// Redirect to login if not authenticated
+if (!session) {
+  return Astro.redirect('/auth/login');
+}
 
 const accountTypes = [
   {
@@ -75,7 +83,7 @@ const accountTypes = [
       {accountTypes.map((type) => (
         <a
           href={type.href}
-          class="group flex flex-col rounded-xl border border-border-subtle bg-bg-surface p-5 hover:border-primary-500/50 hover:bg-bg-surface/80 transition-all"
+          class="group flex flex-col rounded-xl border border-border-subtle bg-bg-surface p-5 hover:border-primary-500/50 hover:bg-bg-surface/80 transition-colors"
         >
           <div class={`w-12 h-12 rounded-lg ${type.color} flex items-center justify-center mb-4`}>
             {type.icon === 'Wallet' && <Wallet className="h-6 w-6" />}

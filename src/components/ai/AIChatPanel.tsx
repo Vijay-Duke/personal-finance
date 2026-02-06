@@ -20,14 +20,19 @@ interface AIChatPanelProps {
 
 interface ChatStatus {
   configured: boolean;
-  hasActiveProvider: boolean;
   defaultProvider: {
     id: string;
     name: string;
     provider: string;
     model: string;
   } | null;
-  totalProviders: number;
+  providers?: Array<{
+    id: string;
+    name: string;
+    provider: string;
+    model: string;
+    isDefault: boolean;
+  }>;
 }
 
 interface ChatMessage {
@@ -132,7 +137,7 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     inputRef.current?.focus();
   }, []);
 
-  const isConfigured = chatStatus?.hasActiveProvider;
+  const isConfigured = chatStatus?.configured;
 
   if (!isOpen) return null;
 

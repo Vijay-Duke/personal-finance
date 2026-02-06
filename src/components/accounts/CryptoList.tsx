@@ -1,10 +1,47 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { cn } from '@/lib/utils';
+import { DonutChart, DonutChartLegend } from '../charts/DonutChart';
+import { PieChart, TrendingUp, Wallet } from 'lucide-react';
+import { CryptoAutocomplete } from './CryptoAutocomplete';
+
+// Crypto logo component with error handling
+function CryptoLogo({ logo, symbol }: { logo: string | null; symbol: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!logo || hasError) {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold text-sm flex-shrink-0">
+        {symbol.slice(0, 2)}
+      </div>
+    );
+  }
+
+  // Only allow https URLs to prevent protocol-based attacks
+  const isValidUrl = logo.startsWith('https://');
+  if (!isValidUrl) {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold text-sm flex-shrink-0">
+        {symbol.slice(0, 2)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={logo}
+      alt={symbol}
+      className="w-10 h-10 rounded-lg object-contain flex-shrink-0"
+      onError={() => setHasError(true)}
+      referrerPolicy="no-referrer"
+    />
+  );
+}
 
 interface CryptoAsset {
   id: string;
@@ -15,6 +52,7 @@ interface CryptoAsset {
   symbol: string;
   cryptoName: string | null;
   coingeckoId: string | null;
+  logo: string | null;
   network: string | null;
   holdings: number;
   avgCostBasis: number;
@@ -36,6 +74,7 @@ interface CryptoAsset {
 interface AddCryptoFormData {
   symbol: string;
   name: string;
+  coingeckoId: string;
   network: string;
   holdings: string;
   avgCostBasis: string;
@@ -46,11 +85,13 @@ interface AddCryptoFormData {
   isStaked: boolean;
   stakingApy: string;
   currency: string;
+  logo: string;
 }
 
 const initialFormData: AddCryptoFormData = {
   symbol: '',
   name: '',
+  coingeckoId: '',
   network: '',
   holdings: '0',
   avgCostBasis: '0',
@@ -61,6 +102,7 @@ const initialFormData: AddCryptoFormData = {
   isStaked: false,
   stakingApy: '0',
   currency: 'USD',
+  logo: '',
 };
 
 export function CryptoList() {
@@ -85,6 +127,7 @@ export function CryptoList() {
         body: JSON.stringify({
           symbol: data.symbol,
           name: data.name || undefined,
+          coingeckoId: data.coingeckoId || undefined,
           network: data.network || undefined,
           holdings: parseFloat(data.holdings) || 0,
           avgCostBasis: parseFloat(data.avgCostBasis) || 0,
@@ -95,6 +138,7 @@ export function CryptoList() {
           isStaked: data.isStaked,
           stakingApy: parseFloat(data.stakingApy) / 100 || 0,
           currency: data.currency,
+          logo: data.logo || undefined,
         }),
       });
       if (!res.ok) {
@@ -109,6 +153,23 @@ export function CryptoList() {
       setFormData(initialFormData);
     },
   });
+
+  const handleCryptoSelect = useCallback((crypto: {
+    symbol: string;
+    name: string;
+    coingeckoId: string;
+    logo?: string;
+    currentPrice?: number;
+  }) => {
+    setFormData(prev => ({
+      ...prev,
+      symbol: crypto.symbol,
+      name: crypto.name,
+      coingeckoId: crypto.coingeckoId,
+      logo: crypto.logo || '',
+      currentPrice: crypto.currentPrice?.toString() || prev.currentPrice,
+    }));
+  }, []);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -166,6 +227,16 @@ export function CryptoList() {
     return type ? classes[type] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800';
   };
 
+  const getStorageColor = (type: string | null) => {
+    const colors: Record<string, string> = {
+      exchange: '#3b82f6',
+      hot_wallet: '#f59e0b',
+      cold_wallet: '#10b981',
+      hardware: '#8b5cf6',
+    };
+    return type ? colors[type] || '#6b7280' : '#6b7280';
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -190,28 +261,189 @@ export function CryptoList() {
   const totalGain = totalMarketValue - totalCostBasis;
   const totalGainPercent = totalCostBasis > 0 ? (totalGain / totalCostBasis) * 100 : 0;
 
+  // Prepare chart data with distinct colors per asset
+  const CHART_PALETTE = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
+  const allocationData = cryptos?.map((crypto, i) => ({
+    label: crypto.symbol,
+    value: crypto.marketValue,
+    color: CHART_PALETTE[i % CHART_PALETTE.length],
+  })) || [];
+
+  // Storage type breakdown - use label for both lookup and display
+  const storageData = cryptos?.reduce((acc, crypto) => {
+    const type = crypto.storageType || 'unknown';
+    const label = getStorageTypeLabel(type);
+    const existing = acc.find(a => a.label === label);
+    if (existing) {
+      existing.value += crypto.marketValue;
+    } else {
+      acc.push({
+        label,
+        value: crypto.marketValue,
+        color: getStorageColor(type),
+      });
+    }
+    return acc;
+  }, [] as { label: string; value: number; color: string }[]) || [];
+
   return (
     <div className="space-y-6">
-      {/* Summary Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-lg">Crypto Portfolio</CardTitle>
-            <CardDescription>Total market value of holdings</CardDescription>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalMarketValue, 'USD')}
+      {/* Summary Cards Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Portfolio Value */}
+        <Card className="lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-lg">Crypto Portfolio</CardTitle>
+              <CardDescription>Total market value</CardDescription>
             </div>
-            <div className={cn(
-              'text-sm font-medium',
-              totalGain >= 0 ? 'text-green-600' : 'text-red-600'
-            )}>
-              {formatCurrency(totalGain, 'USD')} ({formatPercent(totalGainPercent)})
+            <div className="text-right">
+              <div className="text-2xl font-bold">
+                {formatCurrency(totalMarketValue, 'USD')}
+              </div>
+              <div className={cn(
+                'text-sm font-medium',
+                totalGain >= 0 ? 'text-amber-600' : 'text-rose-600'
+              )}>
+                {formatCurrency(totalGain, 'USD')} ({formatPercent(totalGainPercent)})
+              </div>
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
+
+        {/* Allocation Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <PieChart className="w-4 h-4" />
+              Portfolio Allocation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {cryptos && cryptos.length > 0 ? (
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', duration: 1 }}
+                >
+                  <DonutChart
+                    segments={allocationData}
+                    size={140}
+                    strokeWidth={20}
+                    centerValue={formatCurrency(totalMarketValue, 'USD')}
+                    centerLabel="Total"
+                  />
+                </motion.div>
+                <div className="flex-1 w-full max-w-xs">
+                  <DonutChartLegend
+                    segments={allocationData}
+                    total={totalMarketValue}
+                    formatValue={(v) => formatCurrency(v, 'USD')}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-32 items-center justify-center text-text-muted text-sm">
+                <p>Add crypto to see allocation</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Storage Distribution & Gains */}
+      {cryptos && cryptos.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Storage Type Distribution */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Wallet className="w-4 h-4" />
+                Storage Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', duration: 1, delay: 0.2 }}
+                >
+                  <DonutChart
+                    segments={storageData}
+                    size={120}
+                    strokeWidth={18}
+                  />
+                </motion.div>
+                <div className="flex-1 w-full">
+                  <DonutChartLegend
+                    segments={storageData}
+                    total={totalMarketValue}
+                    formatValue={(v) => formatCurrency(v, 'USD')}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gains/Losses */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Unrealized Gains / Losses
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {(() => {
+                  const maxGain = Math.max(...cryptos.map(c => Math.abs(c.unrealizedGain)));
+                  return cryptos.map((crypto, index) => {
+                  const isPositive = crypto.unrealizedGain >= 0;
+                  const barWidth = maxGain > 0 ? (Math.abs(crypto.unrealizedGain) / maxGain) * 100 : 0;
+                  
+                  return (
+                    <motion.div
+                      key={crypto.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-12 text-sm font-medium text-text-primary">
+                        {crypto.symbol}
+                      </div>
+                      <div className="flex-1 h-7 bg-bg-surface rounded-lg overflow-hidden relative">
+                        <motion.div
+                          className={cn(
+                            'h-full rounded-lg flex items-center justify-end px-2',
+                            isPositive ? 'bg-amber-500' : 'bg-rose-500'
+                          )}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.max(barWidth, 5)}%` }}
+                          transition={{ duration: 0.8, delay: 0.2 + index * 0.05 }}
+                        >
+                          <span className="text-xs font-medium text-white whitespace-nowrap">
+                            {formatCurrency(Math.abs(crypto.unrealizedGain), crypto.currency)}
+                          </span>
+                        </motion.div>
+                      </div>
+                      <div className={cn(
+                        'w-16 text-right text-sm font-medium',
+                        isPositive ? 'text-amber-600' : 'text-rose-600'
+                      )}>
+                        {isPositive ? '+' : ''}{crypto.unrealizedGainPercent.toFixed(1)}%
+                      </div>
+                    </motion.div>
+                  );
+                });
+                })()}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Add Crypto Button / Form */}
       {showAddForm ? (
@@ -224,13 +456,11 @@ export function CryptoList() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="symbol">Symbol *</Label>
-                  <Input
-                    id="symbol"
-                    name="symbol"
+                  <CryptoAutocomplete
                     value={formData.symbol}
-                    onChange={handleInputChange}
-                    placeholder="e.g., BTC, ETH"
-                    required
+                    onChange={(value) => setFormData(prev => ({ ...prev, symbol: value }))}
+                    onSelectCrypto={handleCryptoSelect}
+                    placeholder="Search crypto..."
                   />
                 </div>
                 <div className="space-y-2">
@@ -379,18 +609,21 @@ export function CryptoList() {
           <Card key={crypto.id} className={cn(!crypto.isActive && 'opacity-50')}>
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {crypto.symbol}
-                    {crypto.network && (
-                      <span className="text-xs font-normal text-muted-foreground">
-                        {crypto.network}
-                      </span>
-                    )}
-                  </CardTitle>
-                  <CardDescription>
-                    {crypto.cryptoName || crypto.name}
-                  </CardDescription>
+                <div className="flex items-start gap-3">
+                  <CryptoLogo logo={crypto.logo} symbol={crypto.symbol} />
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {crypto.symbol}
+                      {crypto.network && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {crypto.network}
+                        </span>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      {crypto.cryptoName || crypto.name}
+                    </CardDescription>
+                  </div>
                 </div>
                 <span className={cn(
                   'text-xs px-2 py-1 rounded-full font-medium',

@@ -2,6 +2,7 @@
 export * from './household';
 export * from './user';
 export * from './user-financial-profile';
+export * from './dashboard-layout';
 
 // Financial accounts (polymorphic)
 export * from './accounts';
@@ -39,6 +40,12 @@ export {
   type RiskTolerance,
   type IncomeFrequency,
 } from './user-financial-profile';
+
+export {
+  dashboardLayouts,
+  type DashboardLayout,
+  type NewDashboardLayout,
+} from './dashboard-layout';
 
 // Financial accounts
 export {

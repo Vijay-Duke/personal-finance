@@ -321,12 +321,12 @@ export function CommandPalette() {
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="w-full max-w-xl bg-white rounded-lg shadow-2xl overflow-hidden"
+        className="w-full max-w-xl bg-card-bg border border-border rounded-lg shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="flex items-center px-4 border-b">
-          <Search className="h-5 w-5 text-gray-400" />
+        <div className="flex items-center px-4 border-b border-border">
+          <Search className="h-5 w-5 text-text-muted" />
           <input
             ref={inputRef}
             type="text"
@@ -337,9 +337,9 @@ export function CommandPalette() {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search commands..."
-            className="flex-1 px-4 py-4 outline-none text-gray-900 placeholder:text-gray-400"
+            className="flex-1 px-4 py-4 outline-none bg-transparent text-text-primary placeholder:text-text-muted"
           />
-          <kbd className="hidden sm:inline-block px-2 py-1 bg-gray-100 rounded text-xs text-gray-500">
+          <kbd className="hidden sm:inline-block px-2 py-1 bg-content-bg rounded text-xs text-text-muted border border-border">
             ESC
           </kbd>
         </div>
@@ -350,13 +350,13 @@ export function CommandPalette() {
           className="max-h-[50vh] overflow-y-auto py-2"
         >
           {filteredCommands.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500">
+            <div className="px-4 py-8 text-center text-text-muted">
               No commands found
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, commands]) => (
               <div key={category}>
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {category}
                 </div>
                 {commands.map((command) => {
@@ -376,14 +376,14 @@ export function CommandPalette() {
                       className={cn(
                         'w-full px-4 py-3 flex items-center gap-3 text-left transition-colors',
                         isSelected
-                          ? 'bg-blue-50 text-blue-900'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-primary-600/10 text-primary-400'
+                          : 'text-text-primary hover:bg-content-bg'
                       )}
                     >
                       <span
                         className={cn(
                           'p-2 rounded',
-                          isSelected ? 'bg-blue-100' : 'bg-gray-100'
+                          isSelected ? 'bg-primary-600/20' : 'bg-content-bg'
                         )}
                       >
                         {command.icon}
@@ -394,7 +394,7 @@ export function CommandPalette() {
                           <div
                             className={cn(
                               'text-sm truncate',
-                              isSelected ? 'text-blue-600' : 'text-gray-500'
+                              isSelected ? 'text-primary-400' : 'text-text-muted'
                             )}
                           >
                             {command.description}
@@ -404,10 +404,10 @@ export function CommandPalette() {
                       {command.shortcut && (
                         <kbd
                           className={cn(
-                            'px-2 py-1 rounded text-xs',
+                            'px-2 py-1 rounded text-xs border border-border',
                             isSelected
-                              ? 'bg-blue-200 text-blue-800'
-                              : 'bg-gray-100 text-gray-600'
+                              ? 'bg-primary-600/20 text-primary-400'
+                              : 'bg-content-bg text-text-muted'
                           )}
                         >
                           {command.shortcut}
@@ -422,15 +422,15 @@ export function CommandPalette() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between text-xs text-gray-500">
+        <div className="px-4 py-3 bg-content-bg border-t border-border flex items-center justify-between text-xs text-text-muted">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white rounded border">↑</kbd>
-              <kbd className="px-1.5 py-0.5 bg-white rounded border">↓</kbd>
+              <kbd className="px-1.5 py-0.5 bg-card-bg rounded border border-border">↑</kbd>
+              <kbd className="px-1.5 py-0.5 bg-card-bg rounded border border-border">↓</kbd>
               <span className="ml-1">to navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-white rounded border">↵</kbd>
+              <kbd className="px-1.5 py-0.5 bg-card-bg rounded border border-border">↵</kbd>
               <span className="ml-1">to select</span>
             </span>
           </div>

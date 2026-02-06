@@ -20,6 +20,7 @@ export const stocks = sqliteTable('stocks', {
   symbol: text('symbol').notNull(), // e.g., "AAPL", "VTI"
   exchange: text('exchange'), // e.g., "NASDAQ", "NYSE", "ASX"
   securityName: text('security_name'), // Full name, e.g., "Apple Inc."
+  logo: text('logo'), // Company logo URL
 
   // Holdings
   shares: real('shares').notNull().default(0),

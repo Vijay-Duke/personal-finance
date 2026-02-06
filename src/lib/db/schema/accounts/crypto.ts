@@ -19,6 +19,7 @@ export const cryptoAssets = sqliteTable('crypto_assets', {
   symbol: text('symbol').notNull(), // e.g., "BTC", "ETH"
   name: text('name'), // e.g., "Bitcoin", "Ethereum"
   coingeckoId: text('coingecko_id'), // For API lookups
+  logo: text('logo'), // Coin image URL
 
   // Network/Chain
   network: text('network'), // e.g., "mainnet", "polygon", "arbitrum"

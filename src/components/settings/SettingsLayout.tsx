@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { DataExport } from './DataExport';
 import { CategoryRulesManager } from './CategoryRulesManager';
+import { CategoriesManager } from './CategoriesManager';
 import { AIProviderSettings } from '../ai/AIProviderSettings';
 import { ApiKeysSettings } from './ApiKeysSettings';
 import {
   Download,
   Tags,
+  Tag,
   Bot,
   Bell,
   Palette,
@@ -16,7 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type SettingsSection = 'export' | 'categories' | 'ai' | 'api-keys' | 'notifications' | 'appearance' | 'security' | 'data';
+type SettingsSection = 'export' | 'categories-manage' | 'categories' | 'ai' | 'api-keys' | 'notifications' | 'appearance' | 'security' | 'data';
 
 interface SettingsItem {
   id: SettingsSection;
@@ -33,6 +35,13 @@ const settingsItems: SettingsItem[] = [
     icon: <Download className="h-5 w-5" />,
     description: 'Export your data in JSON or CSV format',
     component: <DataExport />,
+  },
+  {
+    id: 'categories-manage',
+    label: 'Categories',
+    icon: <Tag className="h-5 w-5" />,
+    description: 'Manage transaction categories',
+    component: <CategoriesManager />,
   },
   {
     id: 'categories',

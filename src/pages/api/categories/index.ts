@@ -40,13 +40,21 @@ export const GET: APIRoute = async (context) => {
       return json(results);
     }
 
-    // Build hierarchical structure
+    // Build hierarchical structure using Map for O(n) performance
     const rootCategories = results.filter(c => !c.parentId);
     const childCategories = results.filter(c => c.parentId);
 
+    // Group children by parentId in a single pass
+    const childrenMap = new Map<string, typeof results>();
+    for (const child of childCategories) {
+      const children = childrenMap.get(child.parentId!) || [];
+      children.push(child);
+      childrenMap.set(child.parentId!, children);
+    }
+
     const hierarchical = rootCategories.map(parent => ({
       ...parent,
-      children: childCategories.filter(c => c.parentId === parent.id),
+      children: childrenMap.get(parent.id) || [],
     }));
 
     return json(hierarchical);

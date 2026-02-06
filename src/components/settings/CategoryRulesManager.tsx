@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Input } from '../ui/input';
+import { Select } from '../ui/select';
 import { Label } from '../ui/label';
 import { cn } from '@/lib/utils';
 import {
@@ -309,13 +310,13 @@ export function CategoryRulesManager() {
                 {/* Category */}
                 <div className="space-y-2">
                   <Label htmlFor="categoryId">Assign Category *</Label>
-                  <select
+                  <Select
                     id="categoryId"
                     name="categoryId"
                     value={formData.categoryId}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
+                    hint="Category to assign when rule matches"
                   >
                     <option value="">Select category</option>
                     {categories?.map(cat => (
@@ -323,41 +324,39 @@ export function CategoryRulesManager() {
                         {cat.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Match Field */}
                 <div className="space-y-2">
                   <Label htmlFor="matchField">Match Field</Label>
-                  <select
+                  <Select
                     id="matchField"
                     name="matchField"
                     value={formData.matchField}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="description">Description</option>
                     <option value="merchant">Merchant</option>
                     <option value="merchant_category">Merchant Category</option>
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Match Type */}
                 <div className="space-y-2">
                   <Label htmlFor="matchType">Match Type</Label>
-                  <select
+                  <Select
                     id="matchType"
                     name="matchType"
                     value={formData.matchType}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="contains">Contains</option>
                     <option value="starts_with">Starts with</option>
                     <option value="ends_with">Ends with</option>
                     <option value="exact">Exact match</option>
                     <option value="regex">Regex pattern</option>
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Match Value */}
@@ -378,30 +377,30 @@ export function CategoryRulesManager() {
 
                 {/* Transaction Type (optional) */}
                 <div className="space-y-2">
-                  <Label htmlFor="transactionType">Transaction Type (optional)</Label>
-                  <select
+                  <Label htmlFor="transactionType">Transaction Type</Label>
+                  <Select
                     id="transactionType"
                     name="transactionType"
                     value={formData.transactionType}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    hint="Limit rule to specific transaction types"
                   >
                     <option value="">Any type</option>
                     <option value="income">Income only</option>
                     <option value="expense">Expense only</option>
                     <option value="transfer">Transfer only</option>
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Account (optional) */}
                 <div className="space-y-2">
-                  <Label htmlFor="accountId">Account (optional)</Label>
-                  <select
+                  <Label htmlFor="accountId">Account</Label>
+                  <Select
                     id="accountId"
                     name="accountId"
                     value={formData.accountId}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    hint="Limit rule to a specific account"
                   >
                     <option value="">Any account</option>
                     {accounts?.map(acc => (
@@ -409,7 +408,7 @@ export function CategoryRulesManager() {
                         {acc.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Priority */}

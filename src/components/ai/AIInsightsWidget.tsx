@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -456,24 +457,42 @@ function InsightDetailModal({
 }) {
   const config = insightTypeConfig[insight.type];
   const Icon = config.icon;
+  const focusTrapRef = useFocusTrap(true);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="insight-modal-title"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal */}
-      <Card className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <Card ref={focusTrapRef} className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-start justify-between">
           <div className="flex items-start gap-3">
             <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', config.color)}>
               <Icon className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-lg">{insight.title}</CardTitle>
+              <CardTitle id="insight-modal-title" className="text-lg">{insight.title}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs text-text-muted">{config.label}</span>
                 <span
