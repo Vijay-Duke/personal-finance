@@ -1,137 +1,59 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
-import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { getSession } from '@/lib/auth/session';
 
 const session = await getSession(Astro);
 
-// Redirect to login if not authenticated
 if (!session) {
   return Astro.redirect('/auth/login');
 }
+
+const categories = [
+  { href: '/accounts/bank', title: 'Bank Accounts', desc: 'Checking, savings, and money market', icon: 'wallet' },
+  { href: '/accounts/stocks', title: 'Stocks & ETFs', desc: 'Stock holdings and brokerage accounts', icon: 'trending-up' },
+  { href: '/accounts/crypto', title: 'Crypto', desc: 'Cryptocurrency across exchanges and wallets', icon: 'bitcoin' },
+  { href: '/accounts/real-estate', title: 'Real Estate', desc: 'Property investments and rental income', icon: 'building' },
+  { href: '/accounts/debts', title: 'Debts', desc: 'Mortgages, loans, and credit cards', icon: 'credit-card' },
+  { href: '/accounts/superannuation', title: 'Superannuation', desc: 'Retirement and pension accounts', icon: 'piggy-bank' },
+  { href: '/accounts/personal-assets', title: 'Personal Assets', desc: 'Vehicles, collectibles, and valuables', icon: 'package' },
+  { href: '/accounts/business-assets', title: 'Business Assets', desc: 'Business ownership and equity stakes', icon: 'briefcase' },
+];
 ---
 
 <AppLayout title="Accounts">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold">Accounts</h1>
-      <p class="text-muted-foreground">
+  <div class="space-y-16">
+    <div class="text-center">
+      <p class="section-label mb-3">ACCOUNTS</p>
+      <h1 class="page-title">Your Portfolio</h1>
+      <p class="mt-4 text-[15px] text-[var(--color-text-secondary)]">
         Manage all your financial accounts in one place.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <a href="/accounts/bank" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">🏦</span>
-              Bank Accounts
-            </CardTitle>
-            <CardDescription>
-              Checking, savings, and money market accounts
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/stocks" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">📈</span>
-              Stocks
-            </CardTitle>
-            <CardDescription>
-              Individual stock holdings and brokerage accounts
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/crypto" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">₿</span>
-              Crypto
-            </CardTitle>
-            <CardDescription>
-              Cryptocurrency holdings across exchanges and wallets
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/real-estate" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">🏠</span>
-              Real Estate
-            </CardTitle>
-            <CardDescription>
-              Property investments and rental income
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/debts" class="block group">
-        <Card className="h-full transition-colors hover:border-primary border-red-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">💳</span>
-              Debts
-            </CardTitle>
-            <CardDescription>
-              Mortgages, loans, and credit cards
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/superannuation" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">🏛️</span>
-              Superannuation
-            </CardTitle>
-            <CardDescription>
-              Retirement and pension accounts
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/personal-assets" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">🚗</span>
-              Personal Assets
-            </CardTitle>
-            <CardDescription>
-              Vehicles, collectibles, and other valuables
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
-
-      <a href="/accounts/business-assets" class="block group">
-        <Card className="h-full transition-colors hover:border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span class="text-xl">🏢</span>
-              Business Assets
-            </CardTitle>
-            <CardDescription>
-              Business ownership and equity stakes
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </a>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {categories.map((cat) => (
+        <a href={cat.href} class="block group">
+          <div class="rounded-2xl border border-border bg-card-bg p-5 transition-all duration-200 hover:border-primary-300 hover:shadow-sm">
+            <div class="flex items-start gap-4">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600 flex-shrink-0">
+                {cat.icon === 'wallet' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>}
+                {cat.icon === 'trending-up' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}
+                {cat.icon === 'bitcoin' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m5.155-6.2L8.29 4.26m5.908 1.042.348-1.97M7.48 20.364l3.126-17.727"/></svg>}
+                {cat.icon === 'building' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>}
+                {cat.icon === 'credit-card' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>}
+                {cat.icon === 'piggy-bank' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h0"/></svg>}
+                {cat.icon === 'package' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>}
+                {cat.icon === 'briefcase' && <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>}
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold text-text-primary group-hover:text-primary-700 transition-colors">{cat.title}</h3>
+                <p class="text-xs text-text-muted mt-0.5">{cat.desc}</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-primary-500 transition-colors mt-0.5 flex-shrink-0"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 </AppLayout>

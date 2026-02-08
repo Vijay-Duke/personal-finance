@@ -380,7 +380,7 @@ export function NotificationDropdown({ isOpen, onClose, unreadCount }: Notificat
                         deleteNotification(notification.id);
                       }}
                       className="h-7 w-7 text-text-muted hover:text-danger"
-                      title="Delete"
+                      aria-label="Delete notification"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

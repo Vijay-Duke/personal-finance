@@ -33,14 +33,14 @@ function BarTooltip({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600" />
+              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-primary-400 to-primary-600" />
               <span className="text-xs text-text-muted">Income</span>
             </div>
             <span className="text-sm font-medium text-success">{formatCurrency(income)}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-400 to-rose-600" />
+              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-danger to-danger-dark" />
               <span className="text-xs text-text-muted">Expenses</span>
             </div>
             <span className="text-sm font-medium text-danger">{formatCurrency(expenses)}</span>
@@ -244,11 +244,11 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
               <div className="flex justify-between text-sm">
                 <div>
                   <span className="text-muted-foreground">Total Income: </span>
-                  <span className="font-medium text-green-600">{formatCurrency(totalIncome)}</span>
+                  <span className="font-medium text-success">{formatCurrency(totalIncome)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Total Expenses: </span>
-                  <span className="font-medium text-red-600">{formatCurrency(totalExpenses)}</span>
+                  <span className="font-medium text-warning-dark">{formatCurrency(totalExpenses)}</span>
                 </div>
               </div>
 
@@ -286,8 +286,8 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
                       {/* Income bar with gradient */}
                       <div
                         className={cn(
-                          "bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-l-md transition-all duration-300",
-                          hoveredMonth === month.month && "shadow-glow-success"
+                          "bg-gradient-to-r from-primary-400 to-primary-600 rounded-l-md transition-all duration-300",
+                          hoveredMonth === month.month && "shadow-glow"
                         )}
                         style={{
                           width: `${(month.income / maxMonthlyValue) * 50}%`,
@@ -297,8 +297,8 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
                       {/* Expense bar with gradient */}
                       <div
                         className={cn(
-                          "bg-gradient-to-r from-rose-400 to-rose-600 rounded-r-md transition-all duration-300",
-                          hoveredMonth === month.month && "shadow-glow-danger"
+                          "bg-gradient-to-r from-warning to-warning-dark rounded-r-md transition-all duration-300",
+                          hoveredMonth === month.month && "shadow-glow"
                         )}
                         style={{
                           width: `${(month.expenses / maxMonthlyValue) * 50}%`,
@@ -333,11 +333,11 @@ export function SpendingTrends({ months = 6 }: SpendingTrendsProps) {
               {/* Legend */}
               <div className="flex justify-center gap-6 text-xs">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-sm" />
+                  <div className="w-3 h-3 bg-primary-500 rounded-sm" />
                   <span>Income</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded-sm" />
+                  <div className="w-3 h-3 bg-warning rounded-sm" />
                   <span>Expenses</span>
                 </div>
               </div>

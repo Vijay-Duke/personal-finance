@@ -37,16 +37,16 @@ interface GoalCardProps {
   onHover: (id: string | null) => void;
 }
 
-// Color mapping for default colors
+// Earthy Zen color palette - muted, harmonious tones
 const DEFAULT_COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#8b5cf6', // violet
-  '#f97316', // orange
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#84cc16', // lime
+  '#5f8563', // sage green
+  '#7c9f80', // light sage
+  '#b8943b', // warm ochre
+  '#c4956a', // tan/camel
+  '#4a6b4e', // forest
+  '#a3bea6', // pale sage
+  '#6b665e', // warm gray
+  '#b85c5c', // dusty rose
 ];
 
 const getColor = (index: number, customColor?: string) => {
@@ -420,7 +420,7 @@ export function generateGoalData(): GoalData[] {
       name: 'Emergency Fund',
       current: 15000,
       target: 20000,
-      color: '#3b82f6',
+      color: '#5f8563',
       currency: 'USD',
       deadline: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
     },
@@ -429,7 +429,7 @@ export function generateGoalData(): GoalData[] {
       name: 'Dream Vacation',
       current: 3500,
       target: 5000,
-      color: '#10b981',
+      color: '#7c9f80',
       currency: 'USD',
       deadline: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
     },
@@ -438,7 +438,7 @@ export function generateGoalData(): GoalData[] {
       name: 'New Car',
       current: 12000,
       target: 30000,
-      color: '#f59e0b',
+      color: '#b8943b',
       currency: 'USD',
     },
     {
@@ -446,7 +446,7 @@ export function generateGoalData(): GoalData[] {
       name: 'Home Down Payment',
       current: 85000,
       target: 100000,
-      color: '#8b5cf6',
+      color: '#4a6b4e',
       currency: 'USD',
       deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
     },

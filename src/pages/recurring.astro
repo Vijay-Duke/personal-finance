@@ -12,14 +12,5 @@ if (!session) {
 ---
 
 <AppLayout title="Recurring Transactions">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Recurring Transactions</h1>
-      <p class="text-text-muted">
-        Manage subscriptions, bills, and scheduled transactions.
-      </p>
-    </div>
-
-    <RecurringPage client:only="react" />
-  </div>
+  <RecurringPage client:only="react" />
 </AppLayout>

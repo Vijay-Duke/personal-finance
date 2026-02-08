@@ -6,40 +6,38 @@ import { Loader2 } from "lucide-react";
 const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
-    "rounded-lg text-sm font-medium",
-    "transition-all duration-150",
+    "rounded-[var(--radius-lg)] text-[0.9375rem] font-medium",
+    "transition-colors duration-[250ms]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    // Press animation
-    "active:scale-[0.97]",
-    // Minimum touch target
+    "active:scale-[0.98]",
     "min-h-[44px]",
   ].join(" "),
   {
     variants: {
       variant: {
         default:
-          "bg-primary-600 text-white shadow-md hover:bg-primary-500 hover:shadow-lg active:bg-primary-700",
+          "bg-primary-500 text-white shadow-sm hover:bg-primary-600 active:bg-primary-700",
         destructive:
-          "bg-danger text-white shadow-md hover:opacity-90 active:opacity-80",
+          "bg-danger text-white shadow-sm hover:opacity-90 active:opacity-80",
         outline:
-          "border border-border bg-card-bg text-text-primary shadow-sm hover:bg-bg-surface hover:border-primary-600/50",
+          "border border-border bg-transparent text-text-primary hover:bg-bg-surface hover:border-border-strong",
         secondary:
-          "bg-bg-surface text-text-primary shadow-sm hover:bg-border",
+          "bg-bg-surface text-text-primary hover:bg-border-subtle",
         ghost:
           "text-text-secondary hover:bg-bg-surface hover:text-text-primary",
         link:
-          "text-primary-500 underline-offset-4 hover:underline hover:text-primary-400 min-h-0",
+          "text-primary-500 underline-offset-4 hover:underline hover:text-primary-600 min-h-0",
         success:
-          "bg-success text-white shadow-md hover:opacity-90 active:opacity-80",
+          "bg-success text-white shadow-sm hover:opacity-90 active:opacity-80",
         warning:
-          "bg-warning text-text-inverse shadow-md hover:opacity-90 active:opacity-80",
+          "bg-warning text-text-inverse shadow-sm hover:opacity-90 active:opacity-80",
       },
       size: {
-        default: "h-11 px-5 py-2.5",
-        sm: "h-9 px-3 text-xs min-h-[36px]",
-        lg: "h-12 px-8 text-base",
+        default: "h-11 px-6 py-3",
+        sm: "h-9 px-4 text-[0.8125rem] min-h-[36px]",
+        lg: "h-[52px] px-8 text-base",
         xl: "h-14 px-10 text-lg",
         icon: "h-11 w-11 p-0",
         "icon-sm": "h-9 w-9 p-0 min-h-[36px]",
@@ -62,7 +60,7 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, loadingText, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, loading, loadingText, asChild, children, disabled, ...props }, ref) => {
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
@@ -85,7 +83,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-// Icon button with proper accessibility
 const IconButton = React.forwardRef<
   HTMLButtonElement,
   Omit<ButtonProps, 'size'> & {

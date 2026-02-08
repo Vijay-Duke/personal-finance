@@ -6,7 +6,7 @@
 import type { APIContext } from 'astro';
 import { getSession } from './session';
 import { findValidApiKey, incrementApiKeyUsage, checkScope } from './api-keys';
-import type { ApiKeyScope } from '@/lib/db/schema';
+import type { ApiKeyScope, UserRole } from '@/lib/db/schema';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -16,6 +16,7 @@ export interface AuthenticatedContext {
   type: 'session' | 'api_key';
   userId: string;
   householdId: string | null;
+  role: UserRole;
   scope?: ApiKeyScope;
   apiKeyId?: string;
 }
@@ -53,9 +54,9 @@ async function authenticateWithApiKey(
   // Update usage statistics
   await incrementApiKeyUsage(key.id);
 
-  // Get the user's household ID (using top-level imports for performance)
+  // Get the user's household ID and role (using top-level imports for performance)
   const [user] = await db
-    .select({ householdId: users.householdId })
+    .select({ householdId: users.householdId, role: users.role })
     .from(users)
     .where(eq(users.id, key.userId))
     .limit(1);
@@ -64,6 +65,7 @@ async function authenticateWithApiKey(
     type: 'api_key',
     userId: key.userId,
     householdId: user?.householdId || null,
+    role: (user?.role || 'member') as UserRole,
     scope: key.scope,
     apiKeyId: key.id,
   };
@@ -81,10 +83,18 @@ async function authenticateWithSession(
     return null;
   }
 
+  // Fetch user role from DB (session may not include it)
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+
   return {
     type: 'session',
     userId: session.user.id,
     householdId: session.user.householdId || null,
+    role: (user?.role || 'member') as UserRole,
     // Session users have full read_write access
     scope: 'read_write',
   };

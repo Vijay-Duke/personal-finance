@@ -1,4 +1,5 @@
 // Account pages
+export { AccountDetailPage } from './AccountDetailPage';
 export { BankAccountsPage } from './BankAccountsPage';
 export { StocksPage } from './StocksPage';
 export { CryptoPage } from './CryptoPage';
@@ -21,3 +22,10 @@ export { SettingsPage } from './SettingsPage';
 export { ProfilePage } from './ProfilePage';
 export { CategoryRulesPage } from './CategoryRulesPage';
 export { AISettingsPage } from './AISettingsPage';
+
+// Household pages
+export { HouseholdPage } from './HouseholdPage';
+export { JoinHouseholdPage } from './JoinHouseholdPage';
+
+// Admin pages
+export { AdminDashboardPage } from './AdminDashboardPage';

@@ -12,14 +12,5 @@ if (!session) {
 ---
 
 <AppLayout title="Goals">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Financial Goals</h1>
-      <p class="text-text-muted">
-        Track and achieve your savings targets.
-      </p>
-    </div>
-
-    <GoalsPage client:only="react" />
-  </div>
+  <GoalsPage client:only="react" />
 </AppLayout>

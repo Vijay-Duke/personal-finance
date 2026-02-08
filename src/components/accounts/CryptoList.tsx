@@ -2,13 +2,17 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { cn } from '@/lib/utils';
-import { DonutChart, DonutChartLegend } from '../charts/DonutChart';
-import { PieChart, TrendingUp, Wallet } from 'lucide-react';
+import { TrendingUp, Wallet, Coins, Plus, Trash2, Eye } from 'lucide-react';
+import { PageHeader } from '../ui/PageHeader';
+import { PageFooter } from '../ui/PageFooter';
+import { SectionHeader } from '../ui/SectionHeader';
 import { CryptoAutocomplete } from './CryptoAutocomplete';
+
+const CRYPTO_AMBER = '#c4a35a';
 
 // Crypto logo component with error handling
 function CryptoLogo({ logo, symbol }: { logo: string | null; symbol: string }) {
@@ -16,7 +20,8 @@ function CryptoLogo({ logo, symbol }: { logo: string | null; symbol: string }) {
 
   if (!logo || hasError) {
     return (
-      <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold text-sm flex-shrink-0">
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0"
+        style={{ backgroundColor: `${CRYPTO_AMBER}15`, color: CRYPTO_AMBER }}>
         {symbol.slice(0, 2)}
       </div>
     );
@@ -26,7 +31,8 @@ function CryptoLogo({ logo, symbol }: { logo: string | null; symbol: string }) {
   const isValidUrl = logo.startsWith('https://');
   if (!isValidUrl) {
     return (
-      <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold text-sm flex-shrink-0">
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0"
+        style={{ backgroundColor: `${CRYPTO_AMBER}15`, color: CRYPTO_AMBER }}>
         {symbol.slice(0, 2)}
       </div>
     );
@@ -195,11 +201,20 @@ export function CryptoList() {
     }
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(amount);
+  const formatCurrency = (amount: number, currencyCode: string) => {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+      }).format(amount);
+    }
   };
 
   const formatPercent = (value: number) => {
@@ -217,16 +232,6 @@ export function CryptoList() {
     return type ? labels[type] || type : 'Unknown';
   };
 
-  const getStorageTypeBadgeClass = (type: string | null) => {
-    const classes: Record<string, string> = {
-      exchange: 'bg-blue-100 text-blue-800',
-      hot_wallet: 'bg-yellow-100 text-yellow-800',
-      cold_wallet: 'bg-green-100 text-green-800',
-      hardware: 'bg-purple-100 text-purple-800',
-    };
-    return type ? classes[type] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800';
-  };
-
   const getStorageColor = (type: string | null) => {
     const colors: Record<string, string> = {
       exchange: '#3b82f6',
@@ -239,19 +244,27 @@ export function CryptoList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-16">
+        <PageHeader label="CRYPTO HOLDINGS" title="Digital Frontier" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-40 rounded-[var(--radius-xl)] animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{ background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)', backgroundSize: '200% 100%' }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error loading crypto</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-4">
-          Retry
-        </Button>
+      <div className="space-y-16">
+        <PageHeader label="CRYPTO HOLDINGS" title="Digital Frontier" />
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[var(--color-danger)] text-[15px]">Something needs attention</p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-6">Retry</Button>
+        </div>
       </div>
     );
   }
@@ -261,15 +274,13 @@ export function CryptoList() {
   const totalGain = totalMarketValue - totalCostBasis;
   const totalGainPercent = totalCostBasis > 0 ? (totalGain / totalCostBasis) * 100 : 0;
 
-  // Prepare chart data with distinct colors per asset
-  const CHART_PALETTE = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
-  const allocationData = cryptos?.map((crypto, i) => ({
-    label: crypto.symbol,
-    value: crypto.marketValue,
-    color: CHART_PALETTE[i % CHART_PALETTE.length],
+  // Calculate allocation percentages for progress bars
+  const allocationData = cryptos?.map((crypto) => ({
+    ...crypto,
+    percent: totalMarketValue > 0 ? (crypto.marketValue / totalMarketValue) * 100 : 0,
   })) || [];
 
-  // Storage type breakdown - use label for both lookup and display
+  // Storage type breakdown
   const storageData = cryptos?.reduce((acc, crypto) => {
     const type = crypto.storageType || 'unknown';
     const label = getStorageTypeLabel(type);
@@ -280,180 +291,195 @@ export function CryptoList() {
       acc.push({
         label,
         value: crypto.marketValue,
-        color: getStorageColor(type),
+        type,
       });
     }
     return acc;
-  }, [] as { label: string; value: number; color: string }[]) || [];
+  }, [] as { label: string; value: number; type: string }[]) || [];
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Portfolio Value */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-lg">Crypto Portfolio</CardTitle>
-              <CardDescription>Total market value</CardDescription>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">
-                {formatCurrency(totalMarketValue, 'USD')}
-              </div>
-              <div className={cn(
-                'text-sm font-medium',
-                totalGain >= 0 ? 'text-amber-600' : 'text-rose-600'
-              )}>
-                {formatCurrency(totalGain, 'USD')} ({formatPercent(totalGainPercent)})
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+    <div className="space-y-16">
+      <PageHeader label="CRYPTO HOLDINGS" title="Digital Frontier">
+        <div className="hero-number">{formatCurrency(totalMarketValue, 'USD')}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          Across {cryptos?.length || 0} holding{(cryptos?.length || 0) !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
 
-        {/* Allocation Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PieChart className="w-4 h-4" />
-              Portfolio Allocation
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Portfolio Summary */}
+      <Card className="overflow-hidden p-0">
+        <div className="flex flex-col sm:flex-row">
+          {/* Left: Total Value */}
+          <div className="flex-1 p-6 sm:p-8 border-b sm:border-b-0 sm:border-r" style={{ borderColor: 'var(--color-border-subtle)' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${CRYPTO_AMBER}15` }}>
+                <Coins className="w-5 h-5" style={{ color: CRYPTO_AMBER }} />
+              </div>
+              <div>
+                <p className="text-sm text-[var(--color-text-secondary)]">Crypto Portfolio</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Total market value</p>
+              </div>
+            </div>
+            <div className="font-display text-3xl sm:text-4xl font-light tabular-nums tracking-tight text-[var(--color-text-primary)]">
+              {formatCurrency(totalMarketValue, 'USD')}
+            </div>
+            <div className={cn(
+              'mt-2 text-sm font-medium flex items-center gap-1.5',
+              totalGain >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
+            )}>
+              <span className="text-lg">{totalGain >= 0 ? '\u2197' : '\u2198'}</span>
+              {formatCurrency(totalGain, 'USD')} ({formatPercent(totalGainPercent)})
+            </div>
+          </div>
+
+          {/* Right: Allocation List */}
+          <div className="flex-1 p-6 sm:p-8">
+            <h3 className="text-sm text-[var(--color-text-secondary)] mb-4">Allocation</h3>
             {cryptos && cryptos.length > 0 ? (
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', duration: 1 }}
-                >
-                  <DonutChart
-                    segments={allocationData}
-                    size={140}
-                    strokeWidth={20}
-                    centerValue={formatCurrency(totalMarketValue, 'USD')}
-                    centerLabel="Total"
-                  />
-                </motion.div>
-                <div className="flex-1 w-full max-w-xs">
-                  <DonutChartLegend
-                    segments={allocationData}
-                    total={totalMarketValue}
-                    formatValue={(v) => formatCurrency(v, 'USD')}
-                  />
-                </div>
+              <div className="space-y-4">
+                {allocationData.map((crypto, index) => (
+                  <motion.div
+                    key={crypto.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08, duration: 0.4 }}
+                    className="group"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[var(--color-text-primary)]">{crypto.symbol}</span>
+                        <span className="text-xs text-[var(--color-text-muted)]">{crypto.holdings} coins</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-medium text-[var(--color-text-primary)]">{formatCurrency(crypto.marketValue, 'USD')}</span>
+                        <span className="text-xs text-[var(--color-text-muted)] ml-2">{crypto.percent.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                    {/* Colored underline bar */}
+                    <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: CRYPTO_AMBER }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${crypto.percent}%` }}
+                        transition={{ duration: 0.8, delay: 0.3 + index * 0.08, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             ) : (
-              <div className="flex h-32 items-center justify-center text-text-muted text-sm">
-                <p>Add crypto to see allocation</p>
-              </div>
+              <p className="text-sm text-[var(--color-text-muted)]">Add crypto to see allocation</p>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Storage Distribution & Gains */}
       {cryptos && cryptos.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Storage Type Distribution */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Wallet className="w-4 h-4" />
-                Storage Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', duration: 1, delay: 0.2 }}
-                >
-                  <DonutChart
-                    segments={storageData}
-                    size={120}
-                    strokeWidth={18}
-                  />
-                </motion.div>
-                <div className="flex-1 w-full">
-                  <DonutChartLegend
-                    segments={storageData}
-                    total={totalMarketValue}
-                    formatValue={(v) => formatCurrency(v, 'USD')}
-                  />
-                </div>
-              </div>
-            </CardContent>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2 mb-6">
+              <Wallet className="w-4 h-4" style={{ color: CRYPTO_AMBER }} />
+              Storage Distribution
+            </h3>
+            <div className="space-y-3">
+              {storageData.map((item, index) => {
+                const percent = totalMarketValue > 0 ? (item.value / totalMarketValue) * 100 : 0;
+                return (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08, duration: 0.4 }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-[var(--color-text-primary)]">{item.label}</span>
+                      <span className="text-sm text-[var(--color-text-secondary)]">{formatCurrency(item.value, 'USD')}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: 'var(--color-text-muted)' }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percent}%` }}
+                        transition={{ duration: 0.6, delay: 0.2 + index * 0.08 }}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </Card>
 
           {/* Gains/Losses */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Unrealized Gains / Losses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {(() => {
-                  const maxGain = Math.max(...cryptos.map(c => Math.abs(c.unrealizedGain)));
-                  return cryptos.map((crypto, index) => {
-                  const isPositive = crypto.unrealizedGain >= 0;
-                  const barWidth = maxGain > 0 ? (Math.abs(crypto.unrealizedGain) / maxGain) * 100 : 0;
-                  
-                  return (
-                    <motion.div
-                      key={crypto.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="flex items-center gap-4"
-                    >
-                      <div className="w-12 text-sm font-medium text-text-primary">
-                        {crypto.symbol}
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2 mb-6">
+              <TrendingUp className="w-4 h-4" style={{ color: CRYPTO_AMBER }} />
+              Unrealized Gains / Losses
+            </h3>
+            <div className="space-y-6">
+              {cryptos.map((crypto, index) => {
+                const isPositive = crypto.unrealizedGain >= 0;
+
+                return (
+                  <motion.div
+                    key={crypto.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08, duration: 0.4 }}
+                  >
+                    {/* Top row: Symbol, value, percentage */}
+                    <div className="flex items-baseline justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <CryptoLogo logo={crypto.logo} symbol={crypto.symbol} />
+                        <div>
+                          <span className="text-base font-semibold text-[var(--color-text-primary)]">{crypto.symbol}</span>
+                          <p className="text-xs text-[var(--color-text-muted)]">{crypto.holdings} coins</p>
+                        </div>
                       </div>
-                      <div className="flex-1 h-7 bg-bg-surface rounded-lg overflow-hidden relative">
-                        <motion.div
-                          className={cn(
-                            'h-full rounded-lg flex items-center justify-end px-2',
-                            isPositive ? 'bg-amber-500' : 'bg-rose-500'
-                          )}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.max(barWidth, 5)}%` }}
-                          transition={{ duration: 0.8, delay: 0.2 + index * 0.05 }}
-                        >
-                          <span className="text-xs font-medium text-white whitespace-nowrap">
-                            {formatCurrency(Math.abs(crypto.unrealizedGain), crypto.currency)}
-                          </span>
-                        </motion.div>
+                      <div className="text-right">
+                        <div className="text-base font-semibold text-[var(--color-text-primary)]">
+                          {formatCurrency(crypto.unrealizedGain, crypto.currency)}
+                        </div>
+                        <div className={cn(
+                          'text-xs font-medium tabular-nums',
+                          isPositive ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
+                        )}>
+                          {isPositive ? '+' : ''}{crypto.unrealizedGainPercent.toFixed(1)}%
+                        </div>
                       </div>
-                      <div className={cn(
-                        'w-16 text-right text-sm font-medium',
-                        isPositive ? 'text-amber-600' : 'text-rose-600'
-                      )}>
-                        {isPositive ? '+' : ''}{crypto.unrealizedGainPercent.toFixed(1)}%
-                      </div>
-                    </motion.div>
-                  );
-                });
-                })()}
-              </div>
-            </CardContent>
+                    </div>
+                    {/* Decorative underline bar */}
+                    <div className="h-0.5 w-12 rounded-full" style={{ backgroundColor: 'var(--color-border)' }} />
+                  </motion.div>
+                );
+              })}
+            </div>
           </Card>
         </div>
       )}
 
-      {/* Add Crypto Button / Form */}
-      {showAddForm ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Crypto Holding</CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Holdings Section */}
+      <div className="space-y-8">
+        <div className="flex items-end justify-between">
+          <SectionHeader label="YOUR HOLDINGS" title="Portfolio" />
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} className="gap-2">
+              <Plus className="w-[18px] h-[18px]" />
+              Add Crypto
+            </Button>
+          )}
+        </div>
+
+        {/* Add Form */}
+        {showAddForm && (
+          <Card>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">Add Crypto Holding</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="symbol">Symbol *</Label>
                   <CryptoAutocomplete
@@ -526,7 +552,8 @@ export function CryptoList() {
                     name="storageType"
                     value={formData.storageType}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
                   >
                     <option value="exchange">Exchange</option>
                     <option value="hot_wallet">Hot Wallet</option>
@@ -551,7 +578,8 @@ export function CryptoList() {
                     name="currency"
                     value={formData.currency}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
                   >
                     <option value="USD">USD - US Dollar</option>
                     <option value="EUR">EUR - Euro</option>
@@ -578,7 +606,8 @@ export function CryptoList() {
                     name="isStaked"
                     checked={formData.isStaked}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded"
+                    style={{ borderColor: 'var(--color-input-border)' }}
                   />
                   <Label htmlFor="isStaked">Currently Staked</Label>
                 </div>
@@ -592,121 +621,112 @@ export function CryptoList() {
                 </Button>
               </div>
               {createMutation.error && (
-                <p className="text-red-600 text-sm">{createMutation.error.message}</p>
+                <p className="text-[var(--color-danger)] text-sm">{createMutation.error.message}</p>
               )}
             </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>
-          + Add Crypto Holding
-        </Button>
-      )}
+          </Card>
+        )}
 
-      {/* Crypto List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cryptos?.map(crypto => (
-          <Card key={crypto.id} className={cn(!crypto.isActive && 'opacity-50')}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
+        {/* Crypto Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {cryptos?.map((crypto, index) => (
+            <Card key={crypto.id} className={cn(!crypto.isActive && 'opacity-50')} style={{ animationDelay: `${index * 80}ms` }}>
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl shrink-0" style={{ backgroundColor: `${CRYPTO_AMBER}15`, color: CRYPTO_AMBER }}>
                   <CryptoLogo logo={crypto.logo} symbol={crypto.symbol} />
-                  <div>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {crypto.symbol}
-                      {crypto.network && (
-                        <span className="text-xs font-normal text-muted-foreground">
-                          {crypto.network}
-                        </span>
-                      )}
-                    </CardTitle>
-                    <CardDescription>
-                      {crypto.cryptoName || crypto.name}
-                    </CardDescription>
-                  </div>
                 </div>
-                <span className={cn(
-                  'text-xs px-2 py-1 rounded-full font-medium',
-                  getStorageTypeBadgeClass(crypto.storageType)
-                )}>
-                  {getStorageTypeLabel(crypto.storageType)}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-muted-foreground">Market Value</span>
-                  <span className="text-xl font-bold">
-                    {formatCurrency(crypto.marketValue, crypto.currency)}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Holdings</span>
-                    <div className="font-medium">{crypto.holdings.toLocaleString(undefined, { maximumFractionDigits: 8 })}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-[var(--color-text-primary)] truncate">{crypto.symbol}</h3>
+                      <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
+                        {crypto.cryptoName || crypto.name}
+                      </p>
+                    </div>
+                    <span className="text-xs px-2 py-1 rounded-full font-medium shrink-0"
+                      style={{ backgroundColor: `${CRYPTO_AMBER}15`, color: CRYPTO_AMBER }}>
+                      {getStorageTypeLabel(crypto.storageType)}
+                    </span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Price</span>
-                    <div className="font-medium">{formatCurrency(crypto.currentPrice, crypto.currency)}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Cost Basis</span>
-                    <div className="font-medium">{formatCurrency(crypto.totalCostBasis, crypto.currency)}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Gain/Loss</span>
-                    <div className={cn(
-                      'font-medium',
-                      crypto.unrealizedGain >= 0 ? 'text-green-600' : 'text-red-600'
-                    )}>
-                      {formatPercent(crypto.unrealizedGainPercent)}
+                  <div className="mt-4">
+                    <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums tracking-tight">
+                      {formatCurrency(crypto.marketValue, crypto.currency)}
                     </div>
                   </div>
-                </div>
-
-                {(crypto.exchangeName || crypto.walletName) && (
-                  <p className="text-sm text-muted-foreground">
-                    {crypto.exchangeName || crypto.walletName}
-                  </p>
-                )}
-
-                {crypto.isStaked && crypto.stakingApy && crypto.stakingApy > 0 && (
-                  <p className="text-sm text-green-600">
-                    Staking: {(crypto.stakingApy * 100).toFixed(2)}% APY
-                  </p>
-                )}
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`/accounts/${crypto.id}`}>View</a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this crypto?')) {
-                        deleteMutation.mutate(crypto.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                    <div>
+                      <span className="text-[var(--color-text-muted)]">Holdings</span>
+                      <div className="font-medium">{crypto.holdings.toLocaleString(undefined, { maximumFractionDigits: 8 })}</div>
+                    </div>
+                    <div>
+                      <span className="text-[var(--color-text-muted)]">Price</span>
+                      <div className="font-medium">{formatCurrency(crypto.currentPrice, crypto.currency)}</div>
+                    </div>
+                    <div>
+                      <span className="text-[var(--color-text-muted)]">Cost Basis</span>
+                      <div className="font-medium">{formatCurrency(crypto.totalCostBasis, crypto.currency)}</div>
+                    </div>
+                    <div>
+                      <span className="text-[var(--color-text-muted)]">Gain/Loss</span>
+                      <div className={cn('font-medium', crypto.unrealizedGain >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]')}>
+                        {formatPercent(crypto.unrealizedGainPercent)}
+                      </div>
+                    </div>
+                  </div>
+                  {(crypto.exchangeName || crypto.walletName) && (
+                    <p className="text-[13px] text-[var(--color-text-muted)] mt-1">
+                      {crypto.exchangeName || crypto.walletName}
+                    </p>
+                  )}
+                  {crypto.isStaked && crypto.stakingApy && crypto.stakingApy > 0 && (
+                    <p className="text-[13px] mt-1" style={{ color: CRYPTO_AMBER }}>
+                      Staking: {(crypto.stakingApy * 100).toFixed(2)}% APY
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-4 pt-4" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
+                    <Button variant="outline" size="sm" asChild className="gap-1.5">
+                      <a href={`/accounts/${crypto.id}`}><Eye className="w-3.5 h-3.5" />View</a>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-light)] gap-1.5"
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this crypto?')) {
+                          deleteMutation.mutate(crypto.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </Card>
+          ))}
 
-        {cryptos?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p>No crypto holdings yet.</p>
-            <p className="text-sm">Click "Add Crypto Holding" to get started.</p>
-          </div>
-        )}
+          {cryptos?.length === 0 && !showAddForm && (
+            <div className="col-span-full flex flex-col items-center py-16">
+              <div className="mb-4 opacity-40" style={{ color: 'var(--color-text-muted)' }}>
+                <Coins className="w-12 h-12" />
+              </div>
+              <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">A blank canvas</h3>
+              <p className="mt-2 text-[15px] text-[var(--color-text-secondary)] max-w-[400px] text-center">
+                Begin tracking your crypto holdings to see your digital frontier at a glance.
+              </p>
+              <Button onClick={() => setShowAddForm(true)} className="mt-6 gap-2">
+                <Plus className="w-[18px] h-[18px]" />Add Your First Crypto
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <PageFooter
+        icon={<Coins className="w-5 h-5" />}
+        label="YOUR DIGITAL FRONTIER"
+        quote="The future of money is digital currency."
+      />
     </div>
   );
 }

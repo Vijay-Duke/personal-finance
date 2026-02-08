@@ -1,0 +1,15 @@
+---
+import AppLayout from '../layouts/AppLayout.astro';
+import { JoinHouseholdPage } from '../components/pages/JoinHouseholdPage';
+import { getSession } from '@/lib/auth/session';
+
+const session = await getSession(Astro);
+
+if (!session) {
+  return Astro.redirect('/auth/login');
+}
+---
+
+<AppLayout title="Join Household">
+  <JoinHouseholdPage client:only="react" />
+</AppLayout>

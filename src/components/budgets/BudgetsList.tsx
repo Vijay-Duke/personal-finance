@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { PageFooter } from '@/components/ui/PageFooter';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import { cn } from '@/lib/utils';
 import {
   Plus,
@@ -247,14 +250,14 @@ export function BudgetsList() {
 
   // Calculate totals
   const totals = useMemo(() => {
-    if (!budgets) return { budgeted: 0, spent: 0 };
+    if (!budgets) return { budgeted: 0, spent: 0, remaining: 0 };
 
     const budgeted = budgets.reduce((sum, b) => sum + b.amount, 0);
     const spent = budgets.reduce((sum, b) => {
       return sum + (spendingByCategory.get(b.categoryId) || 0);
     }, 0);
 
-    return { budgeted, spent };
+    return { budgeted, spent, remaining: budgeted - spent };
   }, [budgets, spendingByCategory]);
 
   // Filter out categories that already have budgets
@@ -266,49 +269,56 @@ export function BudgetsList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="space-y-16">
+        <PageHeader label="BUDGETS" title="Monthly Allocations" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-28 rounded-[var(--radius-xl)] animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{ background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)', backgroundSize: '200% 100%' }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{formatCurrency(totals.budgeted)}</div>
-            <div className="text-sm text-muted-foreground">Total Budgeted</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{formatCurrency(totals.spent)}</div>
-            <div className="text-sm text-muted-foreground">Spent This Month</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className={cn(
-              "text-2xl font-bold",
-              totals.budgeted - totals.spent >= 0 ? "text-green-600" : "text-red-600"
-            )}>
-              {formatCurrency(totals.budgeted - totals.spent)}
-            </div>
-            <div className="text-sm text-muted-foreground">Remaining</div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-16">
+      {/* Page Header */}
+      <PageHeader label="BUDGETS" title="Monthly Allocations">
+        <div className="hero-number">{formatCurrency(totals.budgeted)}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          {budgets?.length || 0} active budget{(budgets?.length || 0) !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Category Budgets</h2>
-          <p className="text-sm text-muted-foreground">
-            Set spending limits for each category
-          </p>
+      {/* Summary Cards */}
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="text-center">
+            <p className="section-label mb-2">TOTAL BUDGETED</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
+              {formatCurrency(totals.budgeted)}
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">SPENT THIS MONTH</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
+              {formatCurrency(totals.spent)}
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">REMAINING</p>
+            <div className={cn('font-display text-2xl font-light tabular-nums', totals.remaining >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]')}>
+              {formatCurrency(totals.remaining)}
+            </div>
+          </div>
         </div>
+      </Card>
+
+      {/* Section Header */}
+      <div className="flex items-end justify-between">
+        <SectionHeader label="YOUR BUDGETS" title="Categories" />
         <Button onClick={() => setShowForm(true)} disabled={showForm || availableCategories.length === 0}>
           <Plus className="h-4 w-4 mr-2" />
           Add Budget
@@ -318,123 +328,125 @@ export function BudgetsList() {
       {/* Add/Edit Form */}
       {showForm && (
         <Card>
-          <CardHeader>
-            <CardTitle>{editingId ? 'Edit Budget' : 'Create Budget'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {!editingId && (
-                  <div className="space-y-2">
-                    <Label htmlFor="categoryId">Category *</Label>
-                    <select
-                      id="categoryId"
-                      name="categoryId"
-                      value={formData.categoryId}
-                      onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
-                    >
-                      <option value="">Select category</option>
-                      {availableCategories.map(cat => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">
+            {editingId ? 'Edit Budget' : 'Create Budget'}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {!editingId && (
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Budget Amount *</Label>
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={handleInputChange}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="period">Period</Label>
+                  <Label htmlFor="categoryId">Category *</Label>
                   <select
-                    id="period"
-                    name="period"
-                    value={formData.period}
+                    id="categoryId"
+                    name="categoryId"
+                    value={formData.categoryId}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
+                    required
                   >
-                    <option value="monthly">Monthly</option>
-                    <option value="quarterly">Quarterly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value="">Select category</option>
+                    {availableCategories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="alertThreshold">Alert at % spent</Label>
-                  <Input
-                    id="alertThreshold"
-                    name="alertThreshold"
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={formData.alertThreshold}
+              <div className="space-y-2">
+                <Label htmlFor="amount">Budget Amount *</Label>
+                <Input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="period">Period</Label>
+                <select
+                  id="period"
+                  name="period"
+                  value={formData.period}
+                  onChange={handleInputChange}
+                  className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                  style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="alertThreshold">Alert at % spent</Label>
+                <Input
+                  id="alertThreshold"
+                  name="alertThreshold"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.alertThreshold}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="alertEnabled"
+                    checked={formData.alertEnabled}
                     onChange={handleInputChange}
+                    className="h-4 w-4 rounded"
+                    style={{ borderColor: 'var(--color-input-border)' }}
                   />
-                </div>
+                  Enable alerts
+                </Label>
 
-                <div className="flex items-center gap-4">
-                  <Label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="alertEnabled"
-                      checked={formData.alertEnabled}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 rounded border-input"
-                    />
-                    Enable alerts
-                  </Label>
-
-                  <Label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="rolloverEnabled"
-                      checked={formData.rolloverEnabled}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 rounded border-input"
-                    />
-                    Rollover unused
-                  </Label>
-                </div>
+                <Label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="rolloverEnabled"
+                    checked={formData.rolloverEnabled}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 rounded"
+                    style={{ borderColor: 'var(--color-input-border)' }}
+                  />
+                  Rollover unused
+                </Label>
               </div>
+            </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t">
-                <Button type="button" variant="outline" onClick={cancelEdit}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
+            <div className="flex gap-2 justify-end pt-4" style={{ borderTopWidth: '1px', borderTopColor: 'var(--color-border)' }}>
+              <Button type="button" variant="outline" onClick={cancelEdit}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Create'}
+              </Button>
+            </div>
+          </form>
         </Card>
       )}
 
       {/* Budgets List */}
       {!budgets || budgets.length === 0 ? (
         <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <TrendingDown className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+          <div className="py-4">
+            <div className="text-center text-[var(--color-text-muted)]">
+              <TrendingDown className="mx-auto h-12 w-12 mb-4" style={{ color: 'var(--color-text-muted)', opacity: 0.5 }} />
               <p className="text-lg font-medium">No budgets set</p>
               <p className="text-sm mt-1">Create budgets to track spending by category</p>
             </div>
-          </CardContent>
+          </div>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -446,88 +458,100 @@ export function BudgetsList() {
             const isNearLimit = percentage >= (budget.alertThreshold || 80) && !isOverBudget;
 
             return (
-              <Card key={budget.id} className={cn(isOverBudget && "border-red-200")}>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    {/* Category Color */}
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: budget.categoryColor || '#6b7280' }}
-                    />
+              <Card key={budget.id} className={cn(isOverBudget && "border-[var(--color-danger)]")}>
+                <div className="flex items-center gap-4">
+                  {/* Category Color */}
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: budget.categoryColor || '#6b7280' }}
+                  />
 
-                    {/* Budget Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{budget.categoryName}</span>
-                          {isOverBudget && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">
-                              Over budget
-                            </span>
-                          )}
-                          {isNearLimit && (
-                            <AlertTriangle className="h-4 w-4 text-amber-500" />
-                          )}
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {formatCurrency(spent)} / {formatCurrency(budget.amount)}
-                        </span>
+                  {/* Budget Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[var(--color-text-primary)]">{budget.categoryName}</span>
+                        {isOverBudget && (
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: 'var(--color-danger)', color: '#fff', opacity: 0.9 }}
+                          >
+                            Over budget
+                          </span>
+                        )}
+                        {isNearLimit && (
+                          <AlertTriangle className="h-4 w-4" style={{ color: 'var(--color-warning)' }} />
+                        )}
                       </div>
-
-                      {/* Progress Bar */}
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            isOverBudget ? "bg-red-500" : isNearLimit ? "bg-amber-500" : "bg-green-500"
-                          )}
-                          style={{ width: `${Math.min(100, percentage)}%` }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs text-muted-foreground">
-                          {percentage.toFixed(0)}% used
-                        </span>
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isOverBudget ? "text-red-600" : "text-green-600"
-                        )}>
-                          {isOverBudget ? '-' : ''}{formatCurrency(Math.abs(remaining))} {isOverBudget ? 'over' : 'left'}
-                        </span>
-                      </div>
+                      <span className="text-sm text-[var(--color-text-muted)]">
+                        {formatCurrency(spent)} / {formatCurrency(budget.amount)}
+                      </span>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-1 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => startEdit(budget)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-500"
-                        onClick={() => {
-                          if (confirm('Delete this budget?')) {
-                            deleteMutation.mutate(budget.id);
-                          }
+                    {/* Progress Bar */}
+                    <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(100, percentage)}%`,
+                          backgroundColor: isOverBudget
+                            ? 'var(--color-danger)'
+                            : isNearLimit
+                              ? 'var(--color-warning)'
+                              : 'var(--color-success)',
                         }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-[var(--color-text-muted)]">
+                        {percentage.toFixed(0)}% used
+                      </span>
+                      <span className={cn(
+                        "text-xs font-medium",
+                        isOverBudget ? "text-[var(--color-danger)]" : "text-[var(--color-success)]"
+                      )}>
+                        {isOverBudget ? '-' : ''}{formatCurrency(Math.abs(remaining))} {isOverBudget ? 'over' : 'left'}
+                      </span>
                     </div>
                   </div>
-                </CardContent>
+
+                  {/* Actions */}
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => startEdit(budget)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-[var(--color-danger)]"
+                      onClick={() => {
+                        if (confirm('Delete this budget?')) {
+                          deleteMutation.mutate(budget.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </Card>
             );
           })}
         </div>
       )}
+
+      {/* Page Footer */}
+      <PageFooter
+        icon={<TrendingDown className="w-5 h-5" />}
+        label="YOUR MONTHLY ALLOCATIONS"
+        quote="A budget is telling your money where to go."
+      />
     </div>
   );
 }

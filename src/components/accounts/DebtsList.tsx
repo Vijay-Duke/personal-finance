@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Home, CreditCard, Banknote, GraduationCap, Car, Landmark, Stethoscope, FileText, PartyPopper, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '../ui/PageHeader';
+import { PageFooter } from '../ui/PageFooter';
+import { SectionHeader } from '../ui/SectionHeader';
 import { cn } from '@/lib/utils';
+
+// Design system: Debt asset color is Warm Clay
+const DEBT_CLAY = '#b07060';
 
 interface Debt {
   id: string;
@@ -63,6 +70,47 @@ const initialFormData: AddDebtFormData = {
   termMonths: '',
   currency: 'USD',
   autopayEnabled: false,
+};
+
+const getDebtTypeIcon = (type: string) => {
+  switch (type) {
+    case 'mortgage': return Home;
+    case 'credit_card': return CreditCard;
+    case 'personal_loan': return Banknote;
+    case 'student_loan': return GraduationCap;
+    case 'car_loan': return Car;
+    case 'heloc': return Landmark;
+    case 'medical_debt': return Stethoscope;
+    default: return FileText;
+  }
+};
+
+const getDebtTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    mortgage: 'Mortgage',
+    credit_card: 'Credit Card',
+    personal_loan: 'Personal Loan',
+    student_loan: 'Student Loan',
+    car_loan: 'Car Loan',
+    heloc: 'HELOC',
+    medical_debt: 'Medical Debt',
+    other: 'Other Debt',
+  };
+  return labels[type] || type;
+};
+
+const getUtilizationColor = (utilization: number) => {
+  if (utilization < 30) return 'var(--color-success)';
+  if (utilization < 50) return 'var(--color-warning)';
+  if (utilization < 75) return DEBT_CLAY;
+  return 'var(--color-danger)';
+};
+
+const getUtilizationTextColor = (utilization: number) => {
+  if (utilization < 30) return 'var(--color-success)';
+  if (utilization < 50) return 'var(--color-warning)';
+  if (utilization < 75) return DEBT_CLAY;
+  return 'var(--color-danger)';
 };
 
 export function DebtsList() {
@@ -146,56 +194,40 @@ export function DebtsList() {
     }).format(amount);
   };
 
-  const getDebtTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      mortgage: 'Mortgage',
-      credit_card: 'Credit Card',
-      personal_loan: 'Personal Loan',
-      student_loan: 'Student Loan',
-      car_loan: 'Car Loan',
-      heloc: 'HELOC',
-      medical_debt: 'Medical Debt',
-      other: 'Other Debt',
-    };
-    return labels[type] || type;
-  };
-
-  const getDebtTypeIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      mortgage: '🏠',
-      credit_card: '💳',
-      personal_loan: '💵',
-      student_loan: '🎓',
-      car_loan: '🚗',
-      heloc: '🏦',
-      medical_debt: '🏥',
-      other: '📋',
-    };
-    return icons[type] || '📋';
-  };
-
-  const getUtilizationColor = (utilization: number) => {
-    if (utilization < 30) return 'bg-green-500';
-    if (utilization < 50) return 'bg-yellow-500';
-    if (utilization < 75) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
-
+  // Loading -- skeleton shimmer per design system
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-16">
+        <PageHeader label="OBLIGATIONS" title="Debt Overview" />
+        <div className="space-y-0">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-[72px] border-b border-border animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error loading debts</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-4">
-          Retry
-        </Button>
+      <div className="space-y-16">
+        <PageHeader label="OBLIGATIONS" title="Debt Overview" />
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[var(--color-danger)] text-[15px]">Something needs attention</p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })}
+            className="mt-6"
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
@@ -209,53 +241,63 @@ export function DebtsList() {
   const isRevolvingType = ['credit_card', 'heloc'].includes(formData.debtType);
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Debt</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+    <div className="space-y-16">
+      {/* Hero Header */}
+      <PageHeader label="OBLIGATIONS" title="Debt Overview">
+        <div className="hero-number">{formatCurrency(totalDebt, 'USD')}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          Across {debts?.length || 0} obligation{(debts?.length || 0) !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
+
+      {/* Summary Stats */}
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="text-center">
+            <p className="section-label mb-2">TOTAL DEBT</p>
+            <div className="font-display text-2xl font-light tabular-nums" style={{ color: DEBT_CLAY }}>
               {formatCurrency(totalDebt, 'USD')}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Minimum</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">MONTHLY MINIMUM</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
               {formatCurrency(totalMinPayment, 'USD')}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Interest Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">AVG INTEREST RATE</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
               {avgInterestRate ? `${(avgInterestRate * 100).toFixed(1)}%` : 'N/A'}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </Card>
 
-      {/* Add Debt Button / Form */}
-      {showAddForm ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Debt</CardTitle>
-            <CardDescription>Track mortgages, loans, and credit cards</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Debts Section */}
+      <div className="space-y-8">
+        <div className="flex items-end justify-between">
+          <SectionHeader label="YOUR OBLIGATIONS" title="Overview" />
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} className="gap-2">
+              <Plus className="w-[18px] h-[18px]" /> Add Debt
+            </Button>
+          )}
+        </div>
+
+        {/* Add Debt Form */}
+        {showAddForm && (
+          <Card>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">
+              New Obligation
+            </h3>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-6 -mt-4">
+              Track mortgages, loans, and credit cards
+            </p>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Info */}
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Debt Name *</Label>
                     <Input
@@ -274,7 +316,12 @@ export function DebtsList() {
                       name="debtType"
                       value={formData.debtType}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="credit_card">Credit Card</option>
                       <option value="mortgage">Mortgage</option>
@@ -303,7 +350,12 @@ export function DebtsList() {
                       name="currency"
                       value={formData.currency}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="USD">USD</option>
                       <option value="AUD">AUD</option>
@@ -317,8 +369,8 @@ export function DebtsList() {
 
               {/* Balance Info */}
               <div className="space-y-4">
-                <h3 className="font-medium">Balance & Terms</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Balance & Terms</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="currentBalance">Current Balance *</Label>
                     <Input
@@ -374,8 +426,8 @@ export function DebtsList() {
 
               {/* Payment Info */}
               <div className="space-y-4">
-                <h3 className="font-medium">Payment Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Payment Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="minimumPayment">Minimum Payment</Label>
                     <Input
@@ -421,13 +473,14 @@ export function DebtsList() {
                     name="autopayEnabled"
                     checked={formData.autopayEnabled}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded"
+                    style={{ borderColor: 'var(--color-input-border)' }}
                   />
                   <Label htmlFor="autopayEnabled">Autopay enabled</Label>
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-3 justify-end pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
@@ -436,151 +489,123 @@ export function DebtsList() {
                 </Button>
               </div>
               {createMutation.error && (
-                <p className="text-red-600 text-sm">{createMutation.error.message}</p>
+                <p className="text-[var(--color-danger)] text-sm">{createMutation.error.message}</p>
               )}
             </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>
-          + Add Debt
-        </Button>
-      )}
-
-      {/* Debts List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {debts?.map(debt => (
-          <Card key={debt.id} className={cn(!debt.isActive && 'opacity-50')}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getDebtTypeIcon(debt.debtType)}</span>
-                  <div>
-                    <CardTitle className="text-lg">{debt.name}</CardTitle>
-                    <CardDescription>
-                      {debt.lender || getDebtTypeLabel(debt.debtType)}
-                      {debt.autopayEnabled && ' · Autopay'}
-                    </CardDescription>
-                  </div>
-                </div>
-                {debt.paymentDueDay && (
-                  <span className="text-xs bg-muted px-2 py-1 rounded">
-                    Due: {debt.paymentDueDay}th
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* Balance */}
-                <div className="flex justify-between items-baseline">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Balance</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      {formatCurrency(debt.currentBalance, debt.currency)}
-                    </p>
-                  </div>
-                  {debt.interestRate && (
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">APR</p>
-                      <p className="text-lg font-semibold">
-                        {(debt.interestRate * 100).toFixed(2)}%
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Credit Utilization (for credit cards/HELOC) */}
-                {debt.creditLimit && debt.utilization !== null && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Credit Utilization</span>
-                      <span className={cn(
-                        debt.utilization > 75 ? 'text-red-600' :
-                        debt.utilization > 50 ? 'text-orange-600' :
-                        debt.utilization > 30 ? 'text-yellow-600' :
-                        'text-green-600'
-                      )}>
-                        {debt.utilization.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className={cn('h-2 rounded-full', getUtilizationColor(debt.utilization))}
-                        style={{ width: `${Math.min(debt.utilization, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(debt.availableCredit || 0, debt.currency)} available of {formatCurrency(debt.creditLimit, debt.currency)}
-                    </p>
-                  </div>
-                )}
-
-                {/* Payoff Progress (for loans) */}
-                {debt.originalBalance && !debt.creditLimit && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Paid Off</span>
-                      <span className="text-green-600">{debt.paidOffPercent.toFixed(0)}%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full bg-green-500"
-                        style={{ width: `${Math.min(debt.paidOffPercent, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCurrency(debt.paidOff, debt.currency)} paid of {formatCurrency(debt.originalBalance, debt.currency)}
-                    </p>
-                  </div>
-                )}
-
-                {/* Payment Info */}
-                <div className="flex justify-between pt-2 border-t text-sm">
-                  {debt.minimumPayment && (
-                    <div>
-                      <span className="text-muted-foreground">Min. Payment: </span>
-                      <span className="font-medium">{formatCurrency(debt.minimumPayment, debt.currency)}</span>
-                    </div>
-                  )}
-                  {debt.estimatedPayoffMonths && (
-                    <div>
-                      <span className="text-muted-foreground">Est. Payoff: </span>
-                      <span className="font-medium">{debt.estimatedPayoffMonths} months</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`/accounts/${debt.id}`}>View Details</a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this debt?')) {
-                        deleteMutation.mutate(debt.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
           </Card>
-        ))}
-
-        {debts?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p className="text-4xl mb-2">🎉</p>
-            <p>No debts tracked yet.</p>
-            <p className="text-sm">Click "Add Debt" to start tracking your liabilities.</p>
-          </div>
         )}
+
+        {/* Debts List -- Zen Style */}
+        <div className="space-y-0">
+          {debts?.map((debt, index) => {
+            const IconComponent = getDebtTypeIcon(debt.debtType);
+            const hasProgress = debt.originalBalance && !debt.creditLimit;
+            const progressPercent = hasProgress ? Math.min(debt.paidOffPercent || 0, 100) : 0;
+
+            return (
+              <a
+                key={debt.id}
+                href={`/accounts/${debt.id}`}
+                className={cn(
+                  'group block py-5 border-b border-border transition-colors',
+                  'hover:bg-surface-elevated/50',
+                  !debt.isActive && 'opacity-50'
+                )}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon -- Warm Clay per design system */}
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: `${DEBT_CLAY}15`, color: DEBT_CLAY }}
+                  >
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold text-text-primary truncate">
+                          {debt.name}
+                        </h3>
+                        <p className="text-sm text-text-secondary mt-0.5">
+                          {debt.lender || getDebtTypeLabel(debt.debtType)}
+                          {debt.autopayEnabled && <span className="text-success ml-2">· Autopay</span>}
+                          {debt.paymentDueDay && <span className="text-text-muted ml-2">· Due {debt.paymentDueDay}th</span>}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-base font-semibold tabular-nums" style={{ color: DEBT_CLAY }}>
+                          {formatCurrency(debt.currentBalance, debt.currency)}
+                        </div>
+                        {debt.interestRate && (
+                          <p className="text-xs text-text-muted">
+                            {(debt.interestRate * 100).toFixed(1)}% APR
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Progress Bar (for loans) -- subtle */}
+                    {hasProgress && progressPercent > 0 && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="flex-1 h-1 bg-bg-surface rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-success transition-all"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-success tabular-nums">{progressPercent.toFixed(0)}% paid</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Chevron + Delete */}
+                  <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this debt?')) {
+                          deleteMutation.mutate(debt.id);
+                        }
+                      }}
+                      className="p-2 text-text-muted hover:text-danger transition-colors"
+                      aria-label={`Delete ${debt.name}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+
+          {/* Empty State */}
+          {debts?.length === 0 && !showAddForm && (
+            <div className="flex flex-col items-center py-16 border-b border-border">
+              <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
+                <PartyPopper className="w-6 h-6 text-text-muted" />
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary">Debt-free</h3>
+              <p className="mt-2 text-sm text-text-secondary max-w-[400px] text-center">
+                No obligations tracked yet. Add debts to keep your financial picture complete.
+              </p>
+              <Button onClick={() => setShowAddForm(true)} className="mt-6 gap-2">
+                <Plus className="w-4 h-4" /> Add First Obligation
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <PageFooter
+        icon={<CreditCard className="w-5 h-5" />}
+        label="YOUR OBLIGATIONS"
+        quote="The borrower is servant to the lender."
+      />
     </div>
   );
 }

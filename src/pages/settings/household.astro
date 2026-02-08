@@ -1,0 +1,15 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { HouseholdPage } from '../../components/pages/HouseholdPage';
+import { getSession } from '@/lib/auth/session';
+
+const session = await getSession(Astro);
+
+if (!session) {
+  return Astro.redirect('/auth/login');
+}
+---
+
+<AppLayout title="Household Settings">
+  <HouseholdPage client:only="react" />
+</AppLayout>

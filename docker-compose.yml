@@ -14,6 +14,7 @@ services:
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=4321
+      - APP_MODE=${APP_MODE:-self-hosted}
       - DATABASE_URL=/app/data/finance.db
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:4321}

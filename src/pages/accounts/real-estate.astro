@@ -12,14 +12,5 @@ if (!session) {
 ---
 
 <AppLayout title="Real Estate">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Real Estate</h1>
-      <p class="text-text-muted">
-        Track your properties, equity, and rental income.
-      </p>
-    </div>
-
-    <RealEstatePage client:only="react" />
-  </div>
+  <RealEstatePage client:only="react" />
 </AppLayout>

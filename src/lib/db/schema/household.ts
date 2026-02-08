@@ -12,6 +12,7 @@ export const households = sqliteTable('households', {
   primaryCurrency: text('primary_currency').notNull().default('USD'),
   financialYearStart: integer('financial_year_start').notNull().default(1), // 1 = January
   timezone: text('timezone').notNull().default('UTC'),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),

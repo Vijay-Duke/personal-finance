@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { PageFooter } from '@/components/ui/PageFooter';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import {
   Plus,
   Trash2,
@@ -18,6 +21,7 @@ import {
   Plane,
   User,
   AlertCircle,
+  Eye,
 } from 'lucide-react';
 
 interface InsurancePolicy {
@@ -280,295 +284,317 @@ export function InsuranceList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="space-y-16">
+        <PageHeader label="INSURANCE" title="Coverage Overview" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-36 rounded-[var(--radius-xl)] animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{formatCurrency(totals.annual)}</div>
-            <div className="text-sm text-muted-foreground">Total Annual Premiums</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{formatCurrency(totals.monthly)}</div>
-            <div className="text-sm text-muted-foreground">Average Monthly Cost</div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-16">
+      {/* Page Header */}
+      <PageHeader label="INSURANCE" title="Coverage Overview">
+        <div className="hero-number">{formatCurrency(totals.annual)}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          {policies?.length || 0} active polic{(policies?.length || 0) !== 1 ? 'ies' : 'y'}
+        </p>
+      </PageHeader>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Insurance Policies</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage all your insurance coverage in one place
-          </p>
+      {/* Summary */}
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="text-center">
+            <p className="section-label mb-2">ANNUAL PREMIUMS</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
+              {formatCurrency(totals.annual)}
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">MONTHLY AVERAGE</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
+              {formatCurrency(totals.monthly)}
+            </div>
+          </div>
         </div>
-        <Button onClick={() => setShowForm(true)} disabled={showForm}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Policy
+      </Card>
+
+      {/* Section Header */}
+      <div className="flex items-end justify-between">
+        <SectionHeader label="YOUR POLICIES" title="Coverage" />
+        <Button onClick={() => setShowForm(true)} className="gap-2">
+          <Plus className="w-[18px] h-[18px]" /> Add Policy
         </Button>
       </div>
 
       {/* Add/Edit Form */}
       {showForm && (
         <Card>
-          <CardHeader>
-            <CardTitle>{editingId ? 'Edit Policy' : 'Add Insurance Policy'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Policy Name *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="e.g., Home Insurance"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">Type *</Label>
-                  <select
-                    id="type"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    required
-                  >
-                    {Object.entries(insuranceTypeLabels).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="provider">Provider *</Label>
-                  <Input
-                    id="provider"
-                    name="provider"
-                    value={formData.provider}
-                    onChange={handleInputChange}
-                    placeholder="e.g., State Farm"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="policyNumber">Policy Number</Label>
-                  <Input
-                    id="policyNumber"
-                    name="policyNumber"
-                    value={formData.policyNumber}
-                    onChange={handleInputChange}
-                    placeholder="ABC123456"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="premiumAmount">Premium Amount *</Label>
-                  <Input
-                    id="premiumAmount"
-                    name="premiumAmount"
-                    type="number"
-                    step="0.01"
-                    value={formData.premiumAmount}
-                    onChange={handleInputChange}
-                    placeholder="150"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="premiumFrequency">Premium Frequency</Label>
-                  <select
-                    id="premiumFrequency"
-                    name="premiumFrequency"
-                    value={formData.premiumFrequency}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    {Object.entries(premiumFrequencyLabels).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="coverageAmount">Coverage Amount</Label>
-                  <Input
-                    id="coverageAmount"
-                    name="coverageAmount"
-                    type="number"
-                    value={formData.coverageAmount}
-                    onChange={handleInputChange}
-                    placeholder="500000"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="deductible">Deductible</Label>
-                  <Input
-                    id="deductible"
-                    name="deductible"
-                    type="number"
-                    value={formData.deductible}
-                    onChange={handleInputChange}
-                    placeholder="1000"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="renewalDate">Renewal Date</Label>
-                  <Input
-                    id="renewalDate"
-                    name="renewalDate"
-                    type="date"
-                    value={formData.renewalDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="agentName">Agent Name</Label>
-                  <Input
-                    id="agentName"
-                    name="agentName"
-                    value={formData.agentName}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="agentPhone">Agent Phone</Label>
-                  <Input
-                    id="agentPhone"
-                    name="agentPhone"
-                    value={formData.agentPhone}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="agentEmail">Agent Email</Label>
-                  <Input
-                    id="agentEmail"
-                    name="agentEmail"
-                    type="email"
-                    value={formData.agentEmail}
-                    onChange={handleInputChange}
-                  />
-                </div>
+          <h3 className="text-xl font-semibold leading-[1.3] text-[var(--color-text-primary)] mb-6">
+            {editingId ? 'Edit Policy' : 'Add Insurance Policy'}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Policy Name *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Home Insurance"
+                  required
+                />
               </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t">
-                <Button type="button" variant="outline" onClick={cancelEdit}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Add'}
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="type">Type *</Label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                  style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
+                  required
+                >
+                  {Object.entries(insuranceTypeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
               </div>
-            </form>
-          </CardContent>
+
+              <div className="space-y-2">
+                <Label htmlFor="provider">Provider *</Label>
+                <Input
+                  id="provider"
+                  name="provider"
+                  value={formData.provider}
+                  onChange={handleInputChange}
+                  placeholder="e.g., State Farm"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="policyNumber">Policy Number</Label>
+                <Input
+                  id="policyNumber"
+                  name="policyNumber"
+                  value={formData.policyNumber}
+                  onChange={handleInputChange}
+                  placeholder="ABC123456"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="premiumAmount">Premium Amount *</Label>
+                <Input
+                  id="premiumAmount"
+                  name="premiumAmount"
+                  type="number"
+                  step="0.01"
+                  value={formData.premiumAmount}
+                  onChange={handleInputChange}
+                  placeholder="150"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="premiumFrequency">Premium Frequency</Label>
+                <select
+                  id="premiumFrequency"
+                  name="premiumFrequency"
+                  value={formData.premiumFrequency}
+                  onChange={handleInputChange}
+                  className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                  style={{ backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' }}
+                >
+                  {Object.entries(premiumFrequencyLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="coverageAmount">Coverage Amount</Label>
+                <Input
+                  id="coverageAmount"
+                  name="coverageAmount"
+                  type="number"
+                  value={formData.coverageAmount}
+                  onChange={handleInputChange}
+                  placeholder="500000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deductible">Deductible</Label>
+                <Input
+                  id="deductible"
+                  name="deductible"
+                  type="number"
+                  value={formData.deductible}
+                  onChange={handleInputChange}
+                  placeholder="1000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="renewalDate">Renewal Date</Label>
+                <Input
+                  id="renewalDate"
+                  name="renewalDate"
+                  type="date"
+                  value={formData.renewalDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agentName">Agent Name</Label>
+                <Input
+                  id="agentName"
+                  name="agentName"
+                  value={formData.agentName}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agentPhone">Agent Phone</Label>
+                <Input
+                  id="agentPhone"
+                  name="agentPhone"
+                  value={formData.agentPhone}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="agentEmail">Agent Email</Label>
+                <Input
+                  id="agentEmail"
+                  name="agentEmail"
+                  type="email"
+                  value={formData.agentEmail}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4" style={{ borderTopWidth: '1px', borderColor: 'var(--color-border)' }}>
+              <Button type="button" variant="outline" onClick={cancelEdit}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingId ? 'Update' : 'Add'}
+              </Button>
+            </div>
+          </form>
         </Card>
       )}
 
       {/* Policies List */}
       {!policies || policies.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <Shield className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium">No insurance policies</p>
-              <p className="text-sm mt-1">Add your insurance policies to track coverage and premiums</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center py-16">
+          <div className="mb-4 opacity-40" style={{ color: 'var(--color-text-muted)' }}>
+            <Shield className="w-12 h-12" />
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">A blank canvas</h3>
+          <p className="mt-2 text-[15px] text-[var(--color-text-secondary)] max-w-[400px] text-center">
+            Track your insurance policies to maintain complete financial visibility.
+          </p>
+          <Button onClick={() => setShowForm(true)} className="mt-6 gap-2">
+            <Plus className="w-[18px] h-[18px]" /> Add Your First Policy
+          </Button>
+        </div>
       ) : (
         <div className="space-y-6">
           {Array.from(groupedPolicies.entries()).map(([type, typePolicies]) => {
             const Icon = insuranceTypeIcons[type] || Shield;
             return (
               <div key={type} className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Icon className="h-4 w-4" />
+                <h3 className="text-sm font-medium text-[var(--color-text-muted)] flex items-center gap-2">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'rgba(95, 133, 99, 0.1)', color: '#5f8563' }}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
                   {insuranceTypeLabels[type] || type}
                 </h3>
                 <div className="space-y-3">
                   {typePolicies.map((policy: InsurancePolicy) => (
                     <Card key={policy.id}>
-                      <CardContent className="py-4">
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{policy.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {policy.provider}
-                                </span>
-                              </div>
-                              <span className="font-medium">
-                                {formatCurrency(policy.premiumAmount)}/{policy.premiumFrequency.replace('_', '-')}
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-[var(--color-text-primary)]">{policy.name}</span>
+                              <span className="text-xs text-[var(--color-text-muted)]">
+                                {policy.provider}
                               </span>
                             </div>
-
-                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                              {policy.coverageAmount && (
-                                <span>Coverage: {formatCurrency(policy.coverageAmount)}</span>
-                              )}
-                              {policy.deductible && (
-                                <span>Deductible: {formatCurrency(policy.deductible)}</span>
-                              )}
-                              {policy.policyNumber && (
-                                <span>Policy #: {policy.policyNumber}</span>
-                              )}
-                              {policy.renewalDate && (
-                                <span className="flex items-center gap-1">
-                                  <AlertCircle className="h-3 w-3" />
-                                  Renews: {new Date(policy.renewalDate).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
+                            <span className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
+                              {formatCurrency(policy.premiumAmount)}/{policy.premiumFrequency.replace('_', '-')}
+                            </span>
                           </div>
 
-                          <div className="flex gap-1 flex-shrink-0">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => startEdit(policy)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500"
-                              onClick={() => {
-                                if (confirm('Delete this policy?')) {
-                                  deleteMutation.mutate(policy.id);
-                                }
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                          <div className="flex flex-wrap gap-4 text-sm text-[var(--color-text-muted)]">
+                            {policy.coverageAmount && (
+                              <span>Coverage: {formatCurrency(policy.coverageAmount)}</span>
+                            )}
+                            {policy.deductible && (
+                              <span>Deductible: {formatCurrency(policy.deductible)}</span>
+                            )}
+                            {policy.policyNumber && (
+                              <span>Policy #: {policy.policyNumber}</span>
+                            )}
+                            {policy.renewalDate && (
+                              <span className="flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                Renews: {new Date(policy.renewalDate).toLocaleDateString()}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </CardContent>
+
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] gap-1.5"
+                            onClick={() => startEdit(policy)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-light)] gap-1.5"
+                            onClick={() => {
+                              if (confirm('Delete this policy?')) {
+                                deleteMutation.mutate(policy.id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -577,6 +603,13 @@ export function InsuranceList() {
           })}
         </div>
       )}
+
+      {/* Page Footer */}
+      <PageFooter
+        icon={<Shield className="w-5 h-5" />}
+        label="YOUR COVERAGE OVERVIEW"
+        quote="Insurance is the only product that both the seller and buyer hope is never actually used."
+      />
     </div>
   );
 }

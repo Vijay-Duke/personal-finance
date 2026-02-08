@@ -1,17 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signUp, signIn, signOut } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export function SignupForm() {
+interface SignupFormProps {
+  inviteCode?: string;
+}
+
+interface RegistrationStatus {
+  enabled: boolean;
+  mode: string;
+  setupCompleted: boolean;
+}
+
+export function SignupForm({ inviteCode: initialInviteCode }: SignupFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [householdName, setHouseholdName] = useState('');
+  const [inviteCode, setInviteCode] = useState(initialInviteCode || '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+
+  // Check registration status on mount
+  useEffect(() => {
+    fetch('/api/auth/registration-status')
+      .then((r) => r.json())
+      .then((status: RegistrationStatus) => {
+        setRegistrationStatus(status);
+        setCheckingStatus(false);
+      })
+      .catch(() => setCheckingStatus(false));
+  }, []);
+
+  const hasInviteCode = inviteCode.trim().length > 0;
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -41,15 +67,23 @@ export function SignupForm() {
         return;
       }
 
-      // Create household for the new user
+      // Create or join household
+      const householdPayload: Record<string, string> = {};
+      if (hasInviteCode) {
+        householdPayload.inviteCode = inviteCode.trim();
+      } else {
+        householdPayload.householdName = householdName || `${name}'s Household`;
+      }
+
       const householdResponse = await fetch('/api/auth/setup-household', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ householdName: householdName || `${name}'s Household` }),
+        body: JSON.stringify(householdPayload),
       });
 
       if (!householdResponse.ok) {
-        console.error('Failed to create household:', await householdResponse.text());
+        const data = await householdResponse.json().catch(() => ({}));
+        console.error('Failed to setup household:', data);
         // Continue anyway - user can set up household later
       }
 
@@ -66,6 +100,58 @@ export function SignupForm() {
       setLoading(false);
     }
   };
+
+  if (checkingStatus) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-text-muted">Loading...</p>
+      </div>
+    );
+  }
+
+  // Registration disabled and no invite code
+  if (
+    registrationStatus?.setupCompleted &&
+    !registrationStatus?.enabled &&
+    !hasInviteCode
+  ) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-text-primary">Registration Closed</h2>
+          <p className="mt-2 text-sm text-text-muted">
+            New registrations are currently disabled. If you have an invite code, enter it below.
+          </p>
+        </div>
+
+        <div>
+          <Label htmlFor="invite-code-gate">Invite Code</Label>
+          <Input
+            id="invite-code-gate"
+            type="text"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            placeholder="ABCD1234"
+            className="mt-1 font-mono text-center tracking-[0.2em] uppercase"
+            maxLength={8}
+          />
+        </div>
+
+        {inviteCode.trim().length >= 8 && (
+          <p className="text-xs text-success text-center">
+            Invite code detected. You can now create an account.
+          </p>
+        )}
+
+        <p className="text-center text-sm text-text-muted">
+          Already have an account?{' '}
+          <a href="/auth/login" className="text-primary-600 hover:text-primary-700">
+            Sign in
+          </a>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,20 +195,51 @@ export function SignupForm() {
           />
         </div>
 
-        <div>
-          <Label htmlFor="householdName">Household name</Label>
-          <Input
-            id="householdName"
-            type="text"
-            value={householdName}
-            onChange={(e) => setHouseholdName(e.target.value)}
-            placeholder="My Household"
-            className="mt-1"
-          />
-          <p className="mt-1 text-xs text-text-muted">
-            Optional - create a household to share with family
-          </p>
-        </div>
+        {hasInviteCode ? (
+          <div>
+            <Label htmlFor="invite-code">Invite Code</Label>
+            <Input
+              id="invite-code"
+              type="text"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              className="mt-1 font-mono tracking-[0.2em] uppercase"
+              maxLength={8}
+            />
+            <p className="mt-1 text-xs text-text-muted">
+              You'll join an existing household.{' '}
+              <button
+                type="button"
+                className="text-primary-600 hover:underline"
+                onClick={() => setInviteCode('')}
+              >
+                Create new household instead
+              </button>
+            </p>
+          </div>
+        ) : (
+          <div>
+            <Label htmlFor="householdName">Household name</Label>
+            <Input
+              id="householdName"
+              type="text"
+              value={householdName}
+              onChange={(e) => setHouseholdName(e.target.value)}
+              placeholder="My Household"
+              className="mt-1"
+            />
+            <p className="mt-1 text-xs text-text-muted">
+              Optional - create a household to share with family.{' '}
+              <button
+                type="button"
+                className="text-primary-600 hover:underline"
+                onClick={() => setInviteCode(' ')}
+              >
+                Have an invite code?
+              </button>
+            </p>
+          </div>
+        )}
 
         <div>
           <Label htmlFor="password">Password</Label>
@@ -137,6 +254,7 @@ export function SignupForm() {
             autoComplete="new-password"
             className="mt-1"
           />
+          <p className="text-xs text-text-muted mt-1">Must be at least 8 characters</p>
         </div>
 
         <div>

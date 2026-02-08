@@ -4,6 +4,11 @@ import { CategoryRulesManager } from './CategoryRulesManager';
 import { CategoriesManager } from './CategoriesManager';
 import { AIProviderSettings } from '../ai/AIProviderSettings';
 import { ApiKeysSettings } from './ApiKeysSettings';
+import { HouseholdManagement } from '../household/HouseholdManagement';
+import { NotificationsSettings } from './NotificationsSettings';
+import { AppearanceSettings } from './AppearanceSettings';
+import { SecuritySettings } from './SecuritySettings';
+import { DataManagementSettings } from './DataManagementSettings';
 import {
   Download,
   Tags,
@@ -15,10 +20,12 @@ import {
   Database,
   ChevronRight,
   Key,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/ui/PageHeader';
 
-type SettingsSection = 'export' | 'categories-manage' | 'categories' | 'ai' | 'api-keys' | 'notifications' | 'appearance' | 'security' | 'data';
+type SettingsSection = 'household' | 'export' | 'categories-manage' | 'categories' | 'ai' | 'api-keys' | 'notifications' | 'appearance' | 'security' | 'data';
 
 interface SettingsItem {
   id: SettingsSection;
@@ -29,6 +36,13 @@ interface SettingsItem {
 }
 
 const settingsItems: SettingsItem[] = [
+  {
+    id: 'household',
+    label: 'Household',
+    icon: <Users className="h-5 w-5" />,
+    description: 'Manage household members and invites',
+    component: <HouseholdManagement />,
+  },
   {
     id: 'export',
     label: 'Data Export',
@@ -94,133 +108,89 @@ const settingsItems: SettingsItem[] = [
   },
 ];
 
-// Placeholder components for settings sections
-function NotificationsSettings() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-12 text-muted-foreground">
-        <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
-        <h3 className="text-lg font-medium">Notification Preferences</h3>
-        <p className="mt-1">Notification settings will be available in a future update.</p>
-      </div>
-    </div>
-  );
-}
-
-function AppearanceSettings() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-12 text-muted-foreground">
-        <Palette className="mx-auto h-12 w-12 mb-4 opacity-50" />
-        <h3 className="text-lg font-medium">Appearance Settings</h3>
-        <p className="mt-1">Theme and appearance customization coming soon.</p>
-      </div>
-    </div>
-  );
-}
-
-function SecuritySettings() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-12 text-muted-foreground">
-        <Shield className="mx-auto h-12 w-12 mb-4 opacity-50" />
-        <h3 className="text-lg font-medium">Security Settings</h3>
-        <p className="mt-1">Additional security settings will be available in a future update.</p>
-      </div>
-    </div>
-  );
-}
-
-function DataManagementSettings() {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-12 text-muted-foreground">
-        <Database className="mx-auto h-12 w-12 mb-4 opacity-50" />
-        <h3 className="text-lg font-medium">Data Management</h3>
-        <p className="mt-1">Advanced data management features coming soon.</p>
-      </div>
-    </div>
-  );
-}
-
 export function SettingsLayout() {
-  const [activeSection, setActiveSection] = useState<SettingsSection>('export');
+  const [activeSection, setActiveSection] = useState<SettingsSection>('household');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const activeItem = settingsItems.find(item => item.id === activeSection);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Mobile Menu Toggle */}
-      <div className="lg:hidden">
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="w-full flex items-center justify-between p-4 bg-card rounded-lg border"
-        >
-          <div className="flex items-center gap-3">
-            {activeItem?.icon}
-            <span className="font-medium">{activeItem?.label}</span>
-          </div>
-          <ChevronRight
-            className={cn(
-              'h-5 w-5 transition-transform',
-              isMobileMenuOpen ? 'rotate-90' : ''
-            )}
-          />
-        </button>
-      </div>
+    <div className="space-y-16">
+      <PageHeader label="SETTINGS" title="Preferences" />
 
-      {/* Sidebar Navigation */}
-      <nav
-        className={cn(
-          'lg:w-64 flex-shrink-0 space-y-1',
-          isMobileMenuOpen ? 'block' : 'hidden lg:block'
-        )}
-      >
-        {settingsItems.map((item) => (
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Mobile Menu Toggle */}
+        <div className="lg:hidden">
           <button
-            key={item.id}
-            onClick={() => {
-              setActiveSection(item.id);
-              setIsMobileMenuOpen(false);
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors',
-              activeSection === item.id
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted'
-            )}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="w-full flex items-center justify-between p-4 rounded-lg border"
+            style={{ backgroundColor: 'var(--color-bg-surface)', borderColor: 'var(--color-border)' }}
           >
-            {item.icon}
-            <div className="flex-1 min-w-0">
-              <div className="font-medium">{item.label}</div>
-              <div
-                className={cn(
-                  'text-xs truncate',
-                  activeSection === item.id
-                    ? 'text-primary-foreground/80'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {item.description}
-              </div>
+            <div className="flex items-center gap-3">
+              {activeItem?.icon}
+              <span className="font-medium text-[var(--color-text-primary)]">{activeItem?.label}</span>
             </div>
+            <ChevronRight
+              className={cn(
+                'h-5 w-5 transition-transform text-[var(--color-text-muted)]',
+                isMobileMenuOpen ? 'rotate-90' : ''
+              )}
+            />
           </button>
-        ))}
-      </nav>
-
-      {/* Content Area */}
-      <div className="flex-1 min-w-0">
-        <div className="lg:hidden mb-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            {activeItem?.icon}
-            {activeItem?.label}
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            {activeItem?.description}
-          </p>
         </div>
-        {activeItem?.component}
+
+        {/* Sidebar Navigation */}
+        <nav
+          className={cn(
+            'lg:w-64 flex-shrink-0 space-y-1',
+            isMobileMenuOpen ? 'block' : 'hidden lg:block'
+          )}
+        >
+          {settingsItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveSection(item.id);
+                setIsMobileMenuOpen(false);
+              }}
+              className={cn(
+                'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors',
+                activeSection === item.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-[var(--color-bg-surface)]'
+              )}
+            >
+              {item.icon}
+              <div className="flex-1 min-w-0">
+                <div className="font-medium">{item.label}</div>
+                <div
+                  className={cn(
+                    'text-xs truncate',
+                    activeSection === item.id
+                      ? 'text-primary-foreground/80'
+                      : 'text-[var(--color-text-muted)]'
+                  )}
+                >
+                  {item.description}
+                </div>
+              </div>
+            </button>
+          ))}
+        </nav>
+
+        {/* Content Area */}
+        <div className="flex-1 min-w-0">
+          <div className="lg:hidden mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2 text-[var(--color-text-primary)]">
+              {activeItem?.icon}
+              {activeItem?.label}
+            </h2>
+            <p className="text-[var(--color-text-muted)] text-sm mt-1">
+              {activeItem?.description}
+            </p>
+          </div>
+          {activeItem?.component}
+        </div>
       </div>
     </div>
   );

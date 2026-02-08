@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Home, Building2, Palmtree, Store, TreePine, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '../ui/PageHeader';
+import { PageFooter } from '../ui/PageFooter';
+import { SectionHeader } from '../ui/SectionHeader';
 import { cn } from '@/lib/utils';
+
+// Design system: Real Estate asset color is Muted Mauve
+const RE_MAUVE = '#9b85a8';
 
 interface RealEstateProperty {
   id: string;
@@ -81,6 +88,28 @@ const initialFormData: AddPropertyFormData = {
   annualInsurance: '',
   monthlyHOA: '',
   currency: 'USD',
+};
+
+const getPropertyTypeIcon = (type: string) => {
+  switch (type) {
+    case 'primary_residence': return Home;
+    case 'investment': return Building2;
+    case 'vacation': return Palmtree;
+    case 'commercial': return Store;
+    case 'land': return TreePine;
+    default: return Home;
+  }
+};
+
+const getPropertyTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    primary_residence: 'Primary Residence',
+    investment: 'Investment Property',
+    vacation: 'Vacation Home',
+    commercial: 'Commercial',
+    land: 'Land',
+  };
+  return labels[type] || type;
 };
 
 export function RealEstateList() {
@@ -170,43 +199,40 @@ export function RealEstateList() {
     }).format(amount);
   };
 
-  const getPropertyTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      primary_residence: 'Primary Residence',
-      investment: 'Investment Property',
-      vacation: 'Vacation Home',
-      commercial: 'Commercial',
-      land: 'Land',
-    };
-    return labels[type] || type;
-  };
-
-  const getPropertyTypeIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      primary_residence: '🏠',
-      investment: '🏢',
-      vacation: '🏖️',
-      commercial: '🏬',
-      land: '🌳',
-    };
-    return icons[type] || '🏠';
-  };
-
+  // Loading -- skeleton shimmer per design system
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-16">
+        <PageHeader label="REAL ESTATE" title="Property Holdings" />
+        <div className="space-y-0">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-[72px] border-b border-border animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error loading properties</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-4">
-          Retry
-        </Button>
+      <div className="space-y-16">
+        <PageHeader label="REAL ESTATE" title="Property Holdings" />
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[var(--color-danger)] text-[15px]">Something needs attention</p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })}
+            className="mt-6"
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
@@ -216,54 +242,64 @@ export function RealEstateList() {
   const totalRentIncome = properties?.reduce((sum, p) => sum + p.annualRentIncome, 0) || 0;
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Property Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+    <div className="space-y-16">
+      {/* Hero Header */}
+      <PageHeader label="REAL ESTATE" title="Property Holdings">
+        <div className="hero-number">{formatCurrency(totalValue, 'USD')}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          Across {properties?.length || 0} propert{(properties?.length || 0) !== 1 ? 'ies' : 'y'}
+        </p>
+      </PageHeader>
+
+      {/* Summary Stats */}
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="text-center">
+            <p className="section-label mb-2">TOTAL VALUE</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
               {formatCurrency(totalValue, 'USD')}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Equity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">TOTAL EQUITY</p>
+            <div className="font-display text-2xl font-light tabular-nums" style={{ color: RE_MAUVE }}>
               {formatCurrency(totalEquity, 'USD')}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Annual Rental Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+          </div>
+          <div className="text-center">
+            <p className="section-label mb-2">ANNUAL RENT INCOME</p>
+            <div className="font-display text-2xl font-light text-[var(--color-text-primary)] tabular-nums">
               {formatCurrency(totalRentIncome, 'USD')}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </Card>
 
-      {/* Add Property Button / Form */}
-      {showAddForm ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Real Estate Property</CardTitle>
-            <CardDescription>Track your property values and rental income</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Properties Section */}
+      <div className="space-y-8">
+        <div className="flex items-end justify-between">
+          <SectionHeader label="YOUR PROPERTIES" title="Overview" />
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} className="gap-2">
+              <Plus className="w-[18px] h-[18px]" /> Add Property
+            </Button>
+          )}
+        </div>
+
+        {/* Add Property Form */}
+        {showAddForm && (
+          <Card>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">
+              New Property
+            </h3>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-6 -mt-4">
+              Track your property values and rental income
+            </p>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Info */}
               <div className="space-y-4">
-                <h3 className="font-medium">Property Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Property Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Property Name *</Label>
                     <Input
@@ -282,7 +318,12 @@ export function RealEstateList() {
                       name="propertyType"
                       value={formData.propertyType}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="primary_residence">Primary Residence</option>
                       <option value="investment">Investment Property</option>
@@ -296,9 +337,9 @@ export function RealEstateList() {
 
               {/* Address */}
               <div className="space-y-4">
-                <h3 className="font-medium">Address</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 md:col-span-2">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Address</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="address">Street Address</Label>
                     <Input
                       id="address"
@@ -345,7 +386,12 @@ export function RealEstateList() {
                       name="country"
                       value={formData.country}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="US">United States</option>
                       <option value="AU">Australia</option>
@@ -356,10 +402,10 @@ export function RealEstateList() {
                 </div>
               </div>
 
-              {/* Property Details */}
+              {/* Property Specifications */}
               <div className="space-y-4">
-                <h3 className="font-medium">Property Specifications</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Property Specifications</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="squareFootage">Sq. Footage</Label>
                     <Input
@@ -410,8 +456,8 @@ export function RealEstateList() {
 
               {/* Financial Details */}
               <div className="space-y-4">
-                <h3 className="font-medium">Financial Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Financial Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="purchasePrice">Purchase Price</Label>
                     <Input
@@ -442,7 +488,12 @@ export function RealEstateList() {
                       name="currency"
                       value={formData.currency}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="USD">USD</option>
                       <option value="AUD">AUD</option>
@@ -456,8 +507,8 @@ export function RealEstateList() {
 
               {/* Expenses */}
               <div className="space-y-4">
-                <h3 className="font-medium">Annual Expenses</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h4 className="font-medium text-[var(--color-text-primary)]">Annual Expenses</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="annualPropertyTax">Property Tax (Annual)</Label>
                     <Input
@@ -503,12 +554,13 @@ export function RealEstateList() {
                     name="isRental"
                     checked={formData.isRental}
                     onChange={handleInputChange}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded"
+                    style={{ borderColor: 'var(--color-input-border)' }}
                   />
                   <Label htmlFor="isRental">This is a rental property</Label>
                 </div>
                 {formData.isRental && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="monthlyRentIncome">Monthly Rent Income</Label>
                       <Input
@@ -524,7 +576,7 @@ export function RealEstateList() {
                 )}
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-3 justify-end pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
@@ -533,119 +585,107 @@ export function RealEstateList() {
                 </Button>
               </div>
               {createMutation.error && (
-                <p className="text-red-600 text-sm">{createMutation.error.message}</p>
+                <p className="text-[var(--color-danger)] text-sm">{createMutation.error.message}</p>
               )}
             </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>
-          + Add Property
-        </Button>
-      )}
-
-      {/* Properties List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {properties?.map(property => (
-          <Card key={property.id} className={cn(!property.isActive && 'opacity-50')}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getPropertyTypeIcon(property.propertyType)}</span>
-                  <div>
-                    <CardTitle className="text-lg">{property.name}</CardTitle>
-                    <CardDescription>
-                      {getPropertyTypeLabel(property.propertyType)}
-                      {property.isRental && ' · Rental'}
-                    </CardDescription>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* Address */}
-                {(property.address || property.city) && (
-                  <p className="text-sm text-muted-foreground">
-                    {property.address && <span>{property.address}<br /></span>}
-                    {property.city && `${property.city}, `}
-                    {property.state} {property.postalCode}
-                  </p>
-                )}
-
-                {/* Value & Equity */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Value</p>
-                    <p className="text-xl font-bold">
-                      {formatCurrency(property.currentEstimatedValue || property.currentBalance, property.currency)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Equity</p>
-                    <p className="text-xl font-bold text-green-600">
-                      {formatCurrency(property.equity, property.currency)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Property Details */}
-                {(property.bedrooms || property.bathrooms || property.squareFootage) && (
-                  <div className="flex gap-4 text-sm text-muted-foreground">
-                    {property.bedrooms && <span>{property.bedrooms} bed</span>}
-                    {property.bathrooms && <span>{property.bathrooms} bath</span>}
-                    {property.squareFootage && <span>{property.squareFootage.toLocaleString()} sqft</span>}
-                  </div>
-                )}
-
-                {/* Rental Income */}
-                {property.isRental && property.monthlyRentIncome && (
-                  <div className="pt-2 border-t">
-                    <p className="text-sm text-muted-foreground">Monthly Rent</p>
-                    <p className="text-lg font-semibold text-purple-600">
-                      {formatCurrency(property.monthlyRentIncome, property.currency)}/mo
-                    </p>
-                  </div>
-                )}
-
-                {/* Expenses Summary */}
-                {property.totalAnnualExpenses > 0 && (
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Annual Expenses: </span>
-                    <span className="text-red-600">{formatCurrency(property.totalAnnualExpenses, property.currency)}</span>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`/accounts/${property.id}`}>View Details</a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this property?')) {
-                        deleteMutation.mutate(property.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
           </Card>
-        ))}
-
-        {properties?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p className="text-4xl mb-2">🏠</p>
-            <p>No properties yet.</p>
-            <p className="text-sm">Click "Add Property" to track your real estate.</p>
-          </div>
         )}
+
+        {/* Properties List */}
+        <div className="space-y-0">
+          {properties?.map((property) => {
+            const IconComponent = getPropertyTypeIcon(property.propertyType);
+            return (
+              <a
+                key={property.id}
+                href={`/accounts/${property.id}`}
+                className={cn(
+                  'group block py-5 border-b border-border transition-colors',
+                  'hover:bg-surface-elevated/50',
+                  !property.isActive && 'opacity-50'
+                )}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon - 40px rounded */}
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: `${RE_MAUVE}15`, color: RE_MAUVE }}
+                  >
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+
+                  {/* Content - name/details left, value right */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <div>
+                        <h3 className="text-base font-semibold text-text-primary">{property.name}</h3>
+                        <p className="text-sm text-text-secondary">
+                          {getPropertyTypeLabel(property.propertyType)}
+                          {property.isRental && ' · Rental'}
+                          {(property.city || property.state) && ` · ${property.city}${property.state ? `, ${property.state}` : ''}`}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-base font-semibold text-text-primary">
+                          {formatCurrency(property.currentEstimatedValue || property.currentBalance, property.currency)}
+                        </div>
+                        {property.equity > 0 && (
+                          <div className="text-sm text-success">
+                            {formatCurrency(property.equity, property.currency)} equity
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions - hover reveal */}
+                  <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this property?')) {
+                          deleteMutation.mutate(property.id);
+                        }
+                      }}
+                      className="p-2 text-text-muted hover:text-danger"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+
+          {/* Empty State */}
+          {properties?.length === 0 && !showAddForm && (
+            <div className="flex flex-col items-center py-16 border-b border-border">
+              <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
+                <Home className="w-6 h-6 text-text-muted" />
+              </div>
+              <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                A blank canvas
+              </h3>
+              <p className="mt-2 text-[15px] text-[var(--color-text-secondary)] max-w-[400px] text-center">
+                Begin tracking your properties to see your real estate holdings at a glance.
+              </p>
+              <Button onClick={() => setShowAddForm(true)} className="mt-6 gap-2">
+                <Plus className="w-[18px] h-[18px]" />
+                Add Your First Property
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <PageFooter
+        icon={<Home className="w-5 h-5" />}
+        label="YOUR PROPERTY HOLDINGS"
+        quote="Real estate cannot be lost or stolen, nor can it be carried away."
+      />
     </div>
   );
 }

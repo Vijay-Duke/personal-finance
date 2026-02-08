@@ -1,8 +1,10 @@
 ---
 import AuthLayout from '@/layouts/AuthLayout.astro';
 import { SignupForm } from '@/components/auth/SignupForm';
+
+const inviteCode = Astro.url.searchParams.get('invite') || undefined;
 ---
 
 <AuthLayout title="Sign Up">
-  <SignupForm client:load />
+  <SignupForm client:load inviteCode={inviteCode} />
 </AuthLayout>

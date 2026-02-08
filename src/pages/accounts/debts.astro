@@ -12,14 +12,5 @@ if (!session) {
 ---
 
 <AppLayout title="Debts & Liabilities">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Debts & Liabilities</h1>
-      <p class="text-text-muted">
-        Track mortgages, loans, credit cards, and other debts.
-      </p>
-    </div>
-
-    <DebtsPage client:only="react" />
-  </div>
+  <DebtsPage client:only="react" />
 </AppLayout>

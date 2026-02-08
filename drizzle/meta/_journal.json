@@ -15,6 +15,13 @@
       "when": 1770090834877,
       "tag": "0001_aspiring_harrier",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770478280791,
+      "tag": "0002_previous_blur",
+      "breakpoints": true
     }
   ]
 }

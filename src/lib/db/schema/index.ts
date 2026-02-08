@@ -3,6 +3,11 @@ export * from './household';
 export * from './user';
 export * from './user-financial-profile';
 export * from './dashboard-layout';
+export * from './app-settings';
+export * from './household-invite';
+export * from './invite-usage';
+export * from './audit-log';
+export * from './notification-preferences';
 
 // Financial accounts (polymorphic)
 export * from './accounts';
@@ -224,3 +229,42 @@ export {
   type ApiKeyScope,
   type ApiKeySource,
 } from './api-key';
+
+// App Settings (instance configuration)
+export {
+  appSettings,
+  type AppSettings,
+  type NewAppSettings,
+} from './app-settings';
+
+// Household Invites
+export {
+  householdInvites,
+  type HouseholdInvite,
+  type NewHouseholdInvite,
+} from './household-invite';
+
+// Invite Usage (audit trail)
+export {
+  inviteUsages,
+  type InviteUsage,
+  type NewInviteUsage,
+} from './invite-usage';
+
+// Audit Logs
+export {
+  auditLogs,
+  auditActions,
+  auditTargetTypes,
+  type AuditLog,
+  type NewAuditLog,
+  type AuditAction,
+  type AuditTargetType,
+} from './audit-log';
+
+// Notification Preferences
+export {
+  notificationPreferences,
+  type NotificationPreference,
+  type NewNotificationPreference,
+} from './notification-preferences';

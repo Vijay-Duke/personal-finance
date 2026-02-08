@@ -4,10 +4,11 @@ import { households } from './household';
 
 /**
  * User roles within a household:
+ * - super_admin: Instance-level admin, can manage all households and settings
  * - owner: Full access, can manage household settings and members
  * - member: Standard access to view and manage finances
  */
-export const userRoles = ['owner', 'member'] as const;
+export const userRoles = ['super_admin', 'owner', 'member'] as const;
 export type UserRole = typeof userRoles[number];
 
 /**

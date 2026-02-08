@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { PageFooter } from '@/components/ui/PageFooter';
 import { cn } from '@/lib/utils';
 import {
   Upload,
@@ -11,7 +13,6 @@ import {
   Check,
   AlertCircle,
   ArrowRight,
-  Loader2,
 } from 'lucide-react';
 
 interface Account {
@@ -196,17 +197,18 @@ export function CSVImport() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileSpreadsheet className="h-5 w-5" />
+    <div className="space-y-16">
+      <PageHeader label="IMPORT" title="Transaction Import" />
+
+      <Card className="max-w-2xl mx-auto">
+        <h3 className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2 mb-2">
+          <FileSpreadsheet className="h-5 w-5" style={{ color: '#5f8563' }} />
           Import Transactions from CSV
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-6">
           Upload a CSV file from your bank to import transactions automatically.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+
         {/* Step 1: Upload */}
         {step === 'upload' && (
           <div className="space-y-6">
@@ -214,16 +216,24 @@ export function CSVImport() {
             <div
               className={cn(
                 'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-                csvContent ? 'border-green-500 bg-green-50' : 'border-border hover:border-primary'
+                csvContent ? '' : 'hover:border-[var(--color-primary)]'
               )}
+              style={
+                csvContent
+                  ? {
+                      borderColor: 'var(--color-success)',
+                      backgroundColor: 'var(--color-success-light, rgba(95,133,99,0.1))',
+                    }
+                  : { borderColor: 'var(--color-border)' }
+              }
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
             >
               {csvContent ? (
                 <div className="space-y-2">
-                  <Check className="h-12 w-12 text-green-500 mx-auto" />
-                  <p className="font-medium">{fileName}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <Check className="h-12 w-12 text-[var(--color-success)] mx-auto" />
+                  <p className="font-medium text-[var(--color-text-primary)]">{fileName}</p>
+                  <p className="text-sm text-[var(--color-text-muted)]">
                     {csvContent.split('\n').length} rows detected
                   </p>
                   <Button variant="outline" size="sm" onClick={() => setCsvContent('')}>
@@ -232,10 +242,10 @@ export function CSVImport() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <Upload className="h-12 w-12 text-muted-foreground mx-auto" />
+                  <Upload className="h-12 w-12 text-[var(--color-text-muted)] mx-auto" />
                   <div>
-                    <p className="font-medium">Drop your CSV file here</p>
-                    <p className="text-sm text-muted-foreground">or click to browse</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">Drop your CSV file here</p>
+                    <p className="text-sm text-[var(--color-text-muted)]">or click to browse</p>
                   </div>
                   <Input
                     type="file"
@@ -254,7 +264,12 @@ export function CSVImport() {
                 id="account"
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                style={{
+                  backgroundColor: 'var(--color-input-bg)',
+                  borderColor: 'var(--color-input-border)',
+                  color: 'var(--color-text-primary)',
+                }}
               >
                 <option value="">Select account...</option>
                 {accounts?.map((account) => (
@@ -276,7 +291,7 @@ export function CSVImport() {
                 onChange={(e) => setSkipRows(parseInt(e.target.value) || 0)}
                 className="max-w-[100px]"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[var(--color-text-muted)]">
                 Skip additional rows at the start of the file (besides the header row)
               </p>
             </div>
@@ -288,10 +303,9 @@ export function CSVImport() {
               className="w-full"
             >
               {previewMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <span className="text-[var(--color-text-secondary)] animate-pulse">
                   Parsing...
-                </>
+                </span>
               ) : (
                 <>
                   Preview Import
@@ -301,7 +315,13 @@ export function CSVImport() {
             </Button>
 
             {previewMutation.error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+              <div
+                className="rounded-lg border p-4 text-sm text-[var(--color-danger)]"
+                style={{
+                  backgroundColor: 'var(--color-danger-light, rgba(176,112,96,0.1))',
+                  borderColor: 'var(--color-danger)',
+                }}
+              >
                 <AlertCircle className="h-4 w-4 inline mr-2" />
                 {previewMutation.error.message}
               </div>
@@ -314,25 +334,40 @@ export function CSVImport() {
           <div className="space-y-6">
             {/* Summary */}
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="text-2xl font-bold">{previewData.totalRows}</p>
-                <p className="text-xs text-muted-foreground">Total Rows</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-bg-surface)' }}
+              >
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">{previewData.totalRows}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Total Rows</p>
               </div>
-              <div className="p-4 rounded-lg bg-green-50">
-                <p className="text-2xl font-bold text-green-600">{previewData.parsedCount}</p>
-                <p className="text-xs text-muted-foreground">Valid</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-success-light, rgba(95,133,99,0.1))' }}
+              >
+                <p className="text-2xl font-bold text-[var(--color-success)]">{previewData.parsedCount}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Valid</p>
               </div>
-              <div className="p-4 rounded-lg bg-red-50">
-                <p className="text-2xl font-bold text-red-600">{previewData.errors.length}</p>
-                <p className="text-xs text-muted-foreground">Errors</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-danger-light, rgba(176,112,96,0.1))' }}
+              >
+                <p className="text-2xl font-bold text-[var(--color-danger)]">{previewData.errors.length}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Errors</p>
               </div>
             </div>
 
             {/* Errors */}
             {previewData.errors.length > 0 && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                <p className="font-medium text-red-600 mb-2">Parse Errors</p>
-                <ul className="text-sm text-red-600 space-y-1">
+              <div
+                className="rounded-lg border p-4"
+                style={{
+                  borderColor: 'var(--color-danger)',
+                  backgroundColor: 'var(--color-danger-light, rgba(176,112,96,0.1))',
+                }}
+              >
+                <p className="font-medium text-[var(--color-danger)] mb-2">Parse Errors</p>
+                <ul className="text-sm text-[var(--color-danger)] space-y-1">
                   {previewData.errors.slice(0, 5).map((err, i) => (
                     <li key={i}>Row {err.row}: {err.message}</li>
                   ))}
@@ -345,26 +380,32 @@ export function CSVImport() {
 
             {/* Preview Table */}
             <div>
-              <p className="font-medium mb-2">Preview (first 10 rows)</p>
-              <div className="border rounded-lg overflow-hidden">
+              <p className="font-medium text-[var(--color-text-primary)] mb-2">Preview (first 10 rows)</p>
+              <div
+                className="border rounded-lg overflow-hidden"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
                 <table className="w-full text-sm">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Date</th>
-                      <th className="px-3 py-2 text-left">Description</th>
-                      <th className="px-3 py-2 text-right">Amount</th>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+                      <th className="px-3 py-2 text-left text-[var(--color-text-secondary)]">Date</th>
+                      <th className="px-3 py-2 text-left text-[var(--color-text-secondary)]">Description</th>
+                      <th className="px-3 py-2 text-right text-[var(--color-text-secondary)]">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody
+                    className="divide-y"
+                    style={{ '--tw-divide-color': 'var(--color-border-subtle)' } as React.CSSProperties}
+                  >
                     {previewData.preview.map((tx, i) => (
                       <tr key={i}>
-                        <td className="px-3 py-2">{formatDate(tx.date)}</td>
-                        <td className="px-3 py-2 truncate max-w-[200px]">
+                        <td className="px-3 py-2 text-[var(--color-text-primary)]">{formatDate(tx.date)}</td>
+                        <td className="px-3 py-2 truncate max-w-[200px] text-[var(--color-text-primary)]">
                           {tx.merchant || tx.description}
                         </td>
                         <td className={cn(
                           'px-3 py-2 text-right font-medium',
-                          tx.type === 'income' ? 'text-green-600' : 'text-red-600'
+                          tx.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
                         )}>
                           {tx.type === 'income' ? '+' : '-'}
                           {formatCurrency(tx.amount)}
@@ -395,9 +436,9 @@ export function CSVImport() {
         {/* Step 3: Importing */}
         {step === 'importing' && (
           <div className="py-12 text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <p className="font-medium">Importing transactions...</p>
-            <p className="text-sm text-muted-foreground">This may take a moment</p>
+            <div className="text-4xl mx-auto mb-4 animate-pulse text-[var(--color-text-muted)]">...</div>
+            <p className="font-medium text-[var(--color-text-primary)]">Importing transactions...</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">This may take a moment</p>
           </div>
         )}
 
@@ -405,22 +446,31 @@ export function CSVImport() {
         {step === 'complete' && importResult && (
           <div className="space-y-6">
             <div className="text-center py-4">
-              <Check className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <p className="text-xl font-bold">Import Complete!</p>
+              <Check className="h-16 w-16 text-[var(--color-success)] mx-auto mb-4" />
+              <p className="text-xl font-bold text-[var(--color-text-primary)]">Import Complete!</p>
             </div>
 
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 rounded-lg bg-green-50">
-                <p className="text-2xl font-bold text-green-600">{importResult.imported}</p>
-                <p className="text-xs text-muted-foreground">Imported</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-success-light, rgba(95,133,99,0.1))' }}
+              >
+                <p className="text-2xl font-bold text-[var(--color-success)]">{importResult.imported}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Imported</p>
               </div>
-              <div className="p-4 rounded-lg bg-yellow-50">
-                <p className="text-2xl font-bold text-yellow-600">{importResult.skipped}</p>
-                <p className="text-xs text-muted-foreground">Skipped (duplicates)</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-warning-light, rgba(200,170,100,0.1))' }}
+              >
+                <p className="text-2xl font-bold" style={{ color: 'var(--color-warning)' }}>{importResult.skipped}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Skipped (duplicates)</p>
               </div>
-              <div className="p-4 rounded-lg bg-red-50">
-                <p className="text-2xl font-bold text-red-600">{importResult.errors}</p>
-                <p className="text-xs text-muted-foreground">Errors</p>
+              <div
+                className="p-4 rounded-lg"
+                style={{ backgroundColor: 'var(--color-danger-light, rgba(176,112,96,0.1))' }}
+              >
+                <p className="text-2xl font-bold text-[var(--color-danger)]">{importResult.errors}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Errors</p>
               </div>
             </div>
 
@@ -436,12 +486,24 @@ export function CSVImport() {
         )}
 
         {importMutation.error && (
-          <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
+          <div
+            className="mt-4 rounded-lg border p-4 text-sm text-[var(--color-danger)]"
+            style={{
+              backgroundColor: 'var(--color-danger-light, rgba(176,112,96,0.1))',
+              borderColor: 'var(--color-danger)',
+            }}
+          >
             <AlertCircle className="h-4 w-4 inline mr-2" />
             {importMutation.error.message}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </Card>
+
+      <PageFooter
+        icon={<Upload className="w-5 h-5" />}
+        label="TRANSACTION IMPORT"
+        quote="Order is the shape upon which beauty depends."
+      />
+    </div>
   );
 }

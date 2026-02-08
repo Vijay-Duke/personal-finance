@@ -1,18 +1,26 @@
+/**
+ * Zen Finance Goals — "Financial Goals"
+ * Circular progress rings, zen language, breathing layout.
+ */
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, type Variants } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { CircularProgress } from '../ui/CircularProgress';
+import { PageHeader } from '../ui/PageHeader';
+import { SectionHeader } from '../ui/SectionHeader';
+import { InsightQuote } from '../ui/InsightQuote';
+import { PageFooter } from '../ui/PageFooter';
 import { cn } from '@/lib/utils';
 import {
   Plus,
   Trash2,
   Edit2,
-  Target,
-  CheckCircle2,
-  PauseCircle,
-  Trophy,
+  Leaf,
   DollarSign,
   Calendar,
 } from 'lucide-react';
@@ -58,7 +66,7 @@ const initialFormData: FormData = {
   targetDate: '',
   monthlyContribution: '',
   priority: '5',
-  color: '#3b82f6',
+  color: '#5f8563',
 };
 
 const goalTypeLabels: Record<string, string> = {
@@ -71,20 +79,28 @@ const goalTypeLabels: Record<string, string> = {
   custom: 'Custom',
 };
 
-const goalTypeIcons: Record<string, typeof Target> = {
-  savings: Target,
-  debt_payoff: DollarSign,
-  emergency_fund: Target,
-  investment: Target,
-  purchase: Target,
-  retirement: Trophy,
-  custom: Target,
+// Zen status words
+const statusWord = (progress: number): string => {
+  if (progress >= 100) return 'Achieved';
+  if (progress >= 75) return 'Blooming';
+  if (progress >= 50) return 'Flowing';
+  if (progress >= 25) return 'Growing';
+  return 'Beginning';
 };
 
-const COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1',
+const ZEN_COLORS = [
+  '#5f8563', '#7c9f80', '#a3bea6', '#8b9dc3', '#a78bfa',
+  '#d4a574', '#c4956a', '#818cf8', '#6b8e6b', '#4a6b4e',
 ];
+
+const gentle: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  }),
+};
 
 export function GoalsList() {
   const [showForm, setShowForm] = useState(false);
@@ -94,7 +110,6 @@ export function GoalsList() {
   const [contributionAmount, setContributionAmount] = useState('');
   const queryClient = useQueryClient();
 
-  // Fetch goals
   const { data: goals, isLoading } = useQuery<Goal[]>({
     queryKey: ['goals'],
     queryFn: async () => {
@@ -104,7 +119,6 @@ export function GoalsList() {
     },
   });
 
-  // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const res = await fetch('/api/goals', {
@@ -135,7 +149,6 @@ export function GoalsList() {
     },
   });
 
-  // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<FormData & { status: string }> }) => {
       const res = await fetch(`/api/goals/${id}`, {
@@ -165,7 +178,6 @@ export function GoalsList() {
     },
   });
 
-  // Add contribution mutation
   const contributionMutation = useMutation({
     mutationFn: async ({ goalId, amount }: { goalId: string; amount: number }) => {
       const res = await fetch(`/api/goals/${goalId}`, {
@@ -183,7 +195,6 @@ export function GoalsList() {
     },
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/goals/${id}`, { method: 'DELETE' });
@@ -213,7 +224,7 @@ export function GoalsList() {
       targetDate: goal.targetDate ? goal.targetDate.split('T')[0] : '',
       monthlyContribution: goal.monthlyContribution ? String(goal.monthlyContribution) : '',
       priority: String(goal.priority),
-      color: goal.color || '#3b82f6',
+      color: goal.color || '#5f8563',
     });
     setEditingId(goal.id);
     setShowForm(true);
@@ -240,7 +251,7 @@ export function GoalsList() {
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'No target date';
+    if (!dateStr) return null;
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -248,46 +259,62 @@ export function GoalsList() {
     });
   };
 
-  // Group goals by status
   const activeGoals = goals?.filter(g => g.status === 'active') || [];
   const completedGoals = goals?.filter(g => g.status === 'completed') || [];
   const pausedGoals = goals?.filter(g => g.status === 'paused') || [];
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="space-y-16">
+        <PageHeader label="FINANCIAL GOALS" title="Set Your Path" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-36 rounded-[var(--radius-xl)] animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Financial Goals</h2>
-          <p className="text-sm text-muted-foreground">
-            Track progress toward your savings and financial targets
-          </p>
-        </div>
-        <Button onClick={() => setShowForm(true)} disabled={showForm}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Goal
+    <div className="space-y-16">
+      {/* Hero */}
+      <PageHeader
+        label="FINANCIAL GOALS"
+        title="Set Your Path"
+        subtitle="Track your goals with clarity and purpose."
+      />
+
+      {/* Add Button */}
+      <div className="flex justify-center">
+        <Button
+          onClick={() => setShowForm(true)}
+          disabled={showForm}
+          className="gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          + New Goal
         </Button>
       </div>
 
       {/* Add/Edit Form */}
       {showForm && (
         <Card>
-          <CardHeader>
-            <CardTitle>{editingId ? 'Edit Goal' : 'Create Goal'}</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            <h3 className="text-lg mb-4" style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>
+              {editingId ? 'Edit Goal' : 'Add a New Goal'}
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Goal Name *</Label>
+                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     name="name"
@@ -299,13 +326,13 @@ export function GoalsList() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="type">Goal Type</Label>
+                  <Label htmlFor="type">Type</Label>
                   <select
                     id="type"
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-[var(--radius-lg)] border border-border bg-card-bg px-3 py-2 text-sm text-text-primary transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                   >
                     {Object.entries(goalTypeLabels).map(([value, label]) => (
                       <option key={value} value={value}>{label}</option>
@@ -314,7 +341,7 @@ export function GoalsList() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="targetAmount">Target Amount *</Label>
+                  <Label htmlFor="targetAmount">Target Amount</Label>
                   <Input
                     id="targetAmount"
                     name="targetAmount"
@@ -378,14 +405,14 @@ export function GoalsList() {
                 <div className="space-y-2">
                   <Label>Color</Label>
                   <div className="flex gap-2 flex-wrap">
-                    {COLORS.map(color => (
+                    {ZEN_COLORS.map(color => (
                       <button
                         key={color}
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, color }))}
                         className={cn(
-                          "w-8 h-8 rounded-full border-2 transition-all",
-                          formData.color === color ? "border-foreground scale-110" : "border-transparent"
+                          "w-7 h-7 rounded-full border-2 transition-all",
+                          formData.color === color ? "border-text-primary scale-110" : "border-transparent"
                         )}
                         style={{ backgroundColor: color }}
                       />
@@ -394,8 +421,8 @@ export function GoalsList() {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t">
-                <Button type="button" variant="outline" onClick={cancelEdit}>
+              <div className="flex gap-2 justify-end pt-4 border-t border-border">
+                <Button type="button" variant="ghost" onClick={cancelEdit}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
@@ -407,106 +434,126 @@ export function GoalsList() {
         </Card>
       )}
 
-      {/* Goals List */}
-      {!goals || goals.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <Target className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium">No goals yet</p>
-              <p className="text-sm mt-1">Create your first financial goal to start tracking</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {/* Active Goals */}
-          {activeGoals.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">Active Goals</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeGoals.map(goal => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onEdit={() => startEdit(goal)}
-                    onDelete={() => {
-                      if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
-                    }}
-                    onAddContribution={() => setShowContribution(goal.id)}
-                    onPause={() => updateMutation.mutate({ id: goal.id, data: { status: 'paused' } })}
-                    showContribution={showContribution === goal.id}
-                    contributionAmount={contributionAmount}
-                    setContributionAmount={setContributionAmount}
-                    onSubmitContribution={() => {
-                      if (contributionAmount) {
-                        contributionMutation.mutate({
-                          goalId: goal.id,
-                          amount: parseFloat(contributionAmount),
-                        });
-                      }
-                    }}
-                    onCancelContribution={() => {
-                      setShowContribution(null);
-                      setContributionAmount('');
-                    }}
-                    formatCurrency={formatCurrency}
-                    formatDate={formatDate}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Paused Goals */}
-          {pausedGoals.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">Paused Goals</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {pausedGoals.map(goal => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onEdit={() => startEdit(goal)}
-                    onDelete={() => {
-                      if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
-                    }}
-                    onResume={() => updateMutation.mutate({ id: goal.id, data: { status: 'active' } })}
-                    formatCurrency={formatCurrency}
-                    formatDate={formatDate}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Completed Goals */}
-          {completedGoals.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">Completed Goals</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {completedGoals.map(goal => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onDelete={() => {
-                      if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
-                    }}
-                    formatCurrency={formatCurrency}
-                    formatDate={formatDate}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+      {/* Empty State */}
+      {(!goals || goals.length === 0) && !showForm && (
+        <div className="flex flex-col items-center text-center py-8">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-border">
+            <Leaf className="h-6 w-6 text-primary-400" />
+          </div>
+          <p className="text-text-secondary text-sm">No goals set yet</p>
+          <p className="text-text-muted text-xs mt-1 mb-4">Create your first goal to begin tracking</p>
+          <Button onClick={() => setShowForm(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            + Create Your First Goal
+          </Button>
         </div>
       )}
+
+      {/* Active Goals */}
+      {activeGoals.length > 0 && (
+        <section>
+          <SectionHeader title="Growing" meta={`${activeGoals.length} active`} />
+          <div className="mt-8 space-y-6">
+            {activeGoals.map((goal, index) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                index={index}
+                onEdit={() => startEdit(goal)}
+                onDelete={() => {
+                  if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
+                }}
+                onAddContribution={() => setShowContribution(goal.id)}
+                onPause={() => updateMutation.mutate({ id: goal.id, data: { status: 'paused' } })}
+                showContribution={showContribution === goal.id}
+                contributionAmount={contributionAmount}
+                setContributionAmount={setContributionAmount}
+                onSubmitContribution={() => {
+                  if (contributionAmount) {
+                    contributionMutation.mutate({
+                      goalId: goal.id,
+                      amount: parseFloat(contributionAmount),
+                    });
+                  }
+                }}
+                onCancelContribution={() => {
+                  setShowContribution(null);
+                  setContributionAmount('');
+                }}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Paused Goals */}
+      {pausedGoals.length > 0 && (
+        <section>
+          <SectionHeader title="Resting" meta={`${pausedGoals.length} paused`} />
+          <div className="mt-8 space-y-6">
+            {pausedGoals.map((goal, index) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                index={index}
+                onEdit={() => startEdit(goal)}
+                onDelete={() => {
+                  if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
+                }}
+                onResume={() => updateMutation.mutate({ id: goal.id, data: { status: 'active' } })}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Completed Goals */}
+      {completedGoals.length > 0 && (
+        <section>
+          <SectionHeader title="Achieved" meta={`${completedGoals.length} complete`} />
+          <div className="mt-8 space-y-6">
+            {completedGoals.map((goal, index) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                index={index}
+                onDelete={() => {
+                  if (confirm('Delete this goal?')) deleteMutation.mutate(goal.id);
+                }}
+                formatCurrency={formatCurrency}
+                formatDate={formatDate}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Inspirational Quote */}
+      {goals && goals.length > 0 && (
+        <InsightQuote
+          label="REFLECTION"
+          quote="The journey of a thousand miles begins with a single step."
+        />
+      )}
+
+      {/* Footer */}
+      <PageFooter
+        icon={<Leaf className="h-5 w-5" />}
+        label="YOUR GOALS"
+      />
     </div>
   );
 }
 
+// ─── Goal Card ──────────────────────────────────────────────────
+
 interface GoalCardProps {
   goal: Goal;
+  index: number;
   onEdit?: () => void;
   onDelete?: () => void;
   onAddContribution?: () => void;
@@ -518,11 +565,12 @@ interface GoalCardProps {
   onSubmitContribution?: () => void;
   onCancelContribution?: () => void;
   formatCurrency: (amount: number, currency?: string) => string;
-  formatDate: (date: string | null) => string;
+  formatDate: (date: string | null) => string | null;
 }
 
 function GoalCard({
   goal,
+  index,
   onEdit,
   onDelete,
   onAddContribution,
@@ -536,120 +584,119 @@ function GoalCard({
   formatCurrency,
   formatDate,
 }: GoalCardProps) {
-  const Icon = goalTypeIcons[goal.type] || Target;
   const isCompleted = goal.status === 'completed';
   const isPaused = goal.status === 'paused';
+  const color = goal.color || '#5f8563';
+  const status = statusWord(goal.progress);
 
   return (
-    <Card className={cn(isCompleted && "bg-green-50 border-green-200", isPaused && "opacity-60")}>
-      <CardContent className="pt-6">
-        <div className="flex items-start gap-4">
-          {/* Icon */}
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: `${goal.color || '#3b82f6'}20` }}
-          >
-            {isCompleted ? (
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
-            ) : isPaused ? (
-              <PauseCircle className="h-6 w-6 text-muted-foreground" />
-            ) : (
-              <Icon className="h-6 w-6" style={{ color: goal.color || '#3b82f6' }} />
-            )}
+    <motion.div
+      custom={index}
+      variants={gentle}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className={cn(
+        'rounded-[var(--radius-xl)] border border-border bg-card-bg p-6',
+        'transition-shadow duration-300 hover:shadow-lg',
+        isPaused && 'opacity-70'
+      )}
+    >
+      <div className="flex gap-5">
+        {/* Circular Progress */}
+        <div className="flex-shrink-0">
+          <CircularProgress
+            value={Math.min(goal.progress, 100)}
+            size="md"
+            strokeWidth={3}
+            fillColor={isCompleted ? 'var(--color-success)' : color}
+            trackColor="var(--color-border)"
+            showValue
+            animated
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h4 className="text-base font-medium text-text-primary">{goal.name}</h4>
+              <span className="text-xs text-text-muted uppercase tracking-[0.1em]">{status}</span>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-bg-surface text-text-muted flex-shrink-0">
+              {goalTypeLabels[goal.type]}
+            </span>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <h4 className="font-semibold truncate">{goal.name}</h4>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
-                {goalTypeLabels[goal.type]}
-              </span>
+          {goal.description && (
+            <p className="mt-2 text-sm text-text-secondary line-clamp-1">{goal.description}</p>
+          )}
+
+          {/* Progress numbers */}
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-sm font-medium text-text-primary tabular-nums">
+              {formatCurrency(goal.currentAmount)}
+            </span>
+            <span className="text-xs text-text-muted">of</span>
+            <span className="text-sm text-text-secondary tabular-nums">
+              {formatCurrency(goal.targetAmount)}
+            </span>
+          </div>
+
+          {/* Target Date */}
+          {goal.targetDate && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-text-muted">
+              <Calendar className="h-3 w-3" />
+              <span>{formatDate(goal.targetDate)}</span>
             </div>
+          )}
 
-            {goal.description && (
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-1">{goal.description}</p>
-            )}
-
-            {/* Progress */}
-            <div className="space-y-1 mb-3">
-              <div className="flex items-center justify-between text-sm">
-                <span>{formatCurrency(goal.currentAmount)}</span>
-                <span className="text-muted-foreground">{formatCurrency(goal.targetAmount)}</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    isCompleted ? "bg-green-500" : ""
-                  )}
-                  style={{
-                    width: `${Math.min(100, goal.progress)}%`,
-                    backgroundColor: isCompleted ? undefined : (goal.color || '#3b82f6'),
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{goal.progress.toFixed(0)}% complete</span>
-                {!isCompleted && <span>{formatCurrency(goal.remaining)} to go</span>}
-              </div>
+          {/* Contribution Form */}
+          {showContribution && (
+            <div className="mt-3 flex gap-2">
+              <Input
+                type="number"
+                placeholder="Amount"
+                value={contributionAmount}
+                onChange={(e) => setContributionAmount?.(e.target.value)}
+                className="h-9"
+              />
+              <Button size="sm" onClick={onSubmitContribution}>Add</Button>
+              <Button size="sm" variant="ghost" onClick={onCancelContribution}>Cancel</Button>
             </div>
+          )}
 
-            {/* Target Date */}
-            {goal.targetDate && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-                <Calendar className="h-3 w-3" />
-                <span>Target: {formatDate(goal.targetDate)}</span>
-              </div>
+          {/* Actions */}
+          <div className="mt-4 flex gap-2">
+            {!isCompleted && !isPaused && onAddContribution && (
+              <Button size="sm" variant="outline" onClick={onAddContribution}>
+                <DollarSign className="h-3 w-3 mr-1" />
+                Contribute
+              </Button>
             )}
-
-            {/* Contribution Form */}
-            {showContribution && (
-              <div className="flex gap-2 mb-3">
-                <Input
-                  type="number"
-                  placeholder="Amount"
-                  value={contributionAmount}
-                  onChange={(e) => setContributionAmount?.(e.target.value)}
-                  className="h-8"
-                />
-                <Button size="sm" onClick={onSubmitContribution}>Add</Button>
-                <Button size="sm" variant="outline" onClick={onCancelContribution}>Cancel</Button>
-              </div>
+            {isPaused && onResume && (
+              <Button size="sm" variant="outline" onClick={onResume}>
+                Resume
+              </Button>
             )}
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              {!isCompleted && !isPaused && onAddContribution && (
-                <Button size="sm" variant="outline" onClick={onAddContribution}>
-                  <DollarSign className="h-3 w-3 mr-1" />
-                  Add
-                </Button>
-              )}
-              {isPaused && onResume && (
-                <Button size="sm" variant="outline" onClick={onResume}>
-                  Resume
-                </Button>
-              )}
-              {!isCompleted && !isPaused && onPause && (
-                <Button size="sm" variant="ghost" onClick={onPause}>
-                  Pause
-                </Button>
-              )}
-              {onEdit && !isCompleted && (
-                <Button size="sm" variant="ghost" onClick={onEdit}>
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-              )}
-              {onDelete && (
-                <Button size="sm" variant="ghost" className="text-red-500" onClick={onDelete}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
+            {!isCompleted && !isPaused && onPause && (
+              <Button size="sm" variant="ghost" onClick={onPause}>
+                Pause
+              </Button>
+            )}
+            {onEdit && !isCompleted && (
+              <Button size="sm" variant="ghost" onClick={onEdit}>
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button size="sm" variant="ghost" className="text-danger" onClick={onDelete}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   );
 }

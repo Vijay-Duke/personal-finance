@@ -1,0 +1,53 @@
+---
+import AuthLayout from '@/layouts/AuthLayout.astro';
+---
+
+<AuthLayout title="Account Disabled">
+  <div class="text-center py-8">
+    <!-- Shield Icon -->
+    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-surface-100">
+      <svg
+        class="h-10 w-10 text-danger"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+        />
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold text-text-primary mb-2">
+      Account Disabled
+    </h2>
+
+    <p class="text-text-muted mb-6 max-w-sm mx-auto">
+      Your household has been disabled by an administrator. Please contact your admin for more information.
+    </p>
+
+    <a
+      href="/auth/login"
+      class="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"
+    >
+      <svg
+        class="h-4 w-4 mr-2"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+        />
+      </svg>
+      Back to Login
+    </a>
+  </div>
+</AuthLayout>

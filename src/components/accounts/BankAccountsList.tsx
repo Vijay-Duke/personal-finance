@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Landmark, Wallet, PiggyBank, CreditCard, Building2, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '../ui/PageHeader';
+import { PageFooter } from '../ui/PageFooter';
+import { SectionHeader } from '../ui/SectionHeader';
 import { cn } from '@/lib/utils';
+
+// Design system: Cash/Bank asset color is Soft Teal
+const BANK_TEAL = '#6ba3a0';
 
 interface BankAccount {
   id: string;
@@ -39,6 +46,21 @@ const initialFormData: AddAccountFormData = {
   accountNumber: '',
   interestRate: '0',
 };
+
+function getAccountIcon(type: string) {
+  switch (type) {
+    case 'checking':
+      return Wallet;
+    case 'savings':
+      return PiggyBank;
+    case 'money_market':
+      return Building2;
+    case 'cd':
+      return CreditCard;
+    default:
+      return Landmark;
+  }
+}
 
 export function BankAccountsList() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -102,11 +124,20 @@ export function BankAccountsList() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(amount);
+  const formatCurrency = (amount: number, currencyCode: string) => {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+      }).format(amount);
+    }
   };
 
   const getAccountTypeLabel = (type: string) => {
@@ -120,51 +151,77 @@ export function BankAccountsList() {
     return labels[type] || type;
   };
 
+  // Loading — skeleton shimmer per design system
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-16">
+        <PageHeader label="BANK ACCOUNTS" title="Liquid Reserves" />
+        <div className="space-y-0">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-[72px] border-b border-border animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error loading accounts</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-4">
-          Retry
-        </Button>
+      <div className="space-y-16">
+        <PageHeader label="BANK ACCOUNTS" title="Liquid Reserves" />
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[var(--color-danger)] text-[15px]">Something needs attention</p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })}
+            className="mt-6"
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
 
   const totalBalance = accounts?.reduce((sum, acc) => sum + acc.currentBalance, 0) || 0;
+  const accountCount = accounts?.length || 0;
 
   return (
-    <div className="space-y-6">
-      {/* Summary Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-lg">Total Bank Balance</CardTitle>
-            <CardDescription>Across all bank accounts</CardDescription>
-          </div>
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalBalance, 'USD')}
-          </div>
-        </CardHeader>
-      </Card>
+    <div className="space-y-16">
+      {/* Hero Header */}
+      <PageHeader label="BANK ACCOUNTS" title="Liquid Reserves">
+        <div className="hero-number">{formatCurrency(totalBalance, 'USD')}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          Across {accountCount} account{accountCount !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
 
-      {/* Add Account Button / Form */}
-      {showAddForm ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Bank Account</CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Accounts Section */}
+      <div className="space-y-8">
+        <div className="flex items-end justify-between">
+          <SectionHeader label="YOUR ACCOUNTS" title="Overview" />
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} className="gap-2">
+              <Plus className="w-[18px] h-[18px]" />
+              Add Account
+            </Button>
+          )}
+        </div>
+
+        {/* Add Account Form */}
+        {showAddForm && (
+          <Card>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">
+              New Bank Account
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Account Name *</Label>
                   <Input
@@ -193,7 +250,12 @@ export function BankAccountsList() {
                     name="accountType"
                     value={formData.accountType}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{
+                      backgroundColor: 'var(--color-input-bg)',
+                      borderColor: 'var(--color-input-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
                   >
                     <option value="checking">Checking</option>
                     <option value="savings">Savings</option>
@@ -209,7 +271,12 @@ export function BankAccountsList() {
                     name="currency"
                     value={formData.currency}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{
+                      backgroundColor: 'var(--color-input-bg)',
+                      borderColor: 'var(--color-input-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
                   >
                     <option value="USD">USD - US Dollar</option>
                     <option value="EUR">EUR - Euro</option>
@@ -256,7 +323,7 @@ export function BankAccountsList() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-3 justify-end pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
@@ -265,75 +332,112 @@ export function BankAccountsList() {
                 </Button>
               </div>
               {createMutation.error && (
-                <p className="text-red-600 text-sm">{createMutation.error.message}</p>
+                <p className="text-[var(--color-danger)] text-sm">{createMutation.error.message}</p>
               )}
             </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>
-          + Add Bank Account
-        </Button>
-      )}
-
-      {/* Accounts List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {accounts?.map(account => (
-          <Card key={account.id} className={cn(!account.isActive && 'opacity-50')}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{account.name}</CardTitle>
-                  <CardDescription>
-                    {account.bankName || 'Bank Account'} &middot; {getAccountTypeLabel(account.accountType)}
-                  </CardDescription>
-                </div>
-                {account.accountNumber && (
-                  <span className="text-xs text-muted-foreground">
-                    ****{account.accountNumber}
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold">
-                  {formatCurrency(account.currentBalance, account.currency)}
-                </div>
-                {account.interestRate && account.interestRate > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    {(account.interestRate * 100).toFixed(2)}% APY
-                  </p>
-                )}
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`/accounts/${account.id}`}>View</a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this account?')) {
-                        deleteMutation.mutate(account.id);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
           </Card>
-        ))}
-
-        {accounts?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p>No bank accounts yet.</p>
-            <p className="text-sm">Click "Add Bank Account" to get started.</p>
-          </div>
         )}
+
+        {/* Accounts List — Zen List Style per DESIGN_SYSTEM.md 9.7 */}
+        <div className="space-y-0">
+          {accounts?.map((account, index) => {
+            const IconComponent = getAccountIcon(account.accountType);
+            return (
+              <a
+                key={account.id}
+                href={`/accounts/${account.id}`}
+                className={cn(
+                  'group block py-5 border-b border-border transition-colors',
+                  'hover:bg-surface-elevated/50',
+                  !account.isActive && 'opacity-50'
+                )}
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon — Soft Teal per design system */}
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: `${BANK_TEAL}15`, color: BANK_TEAL }}
+                  >
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold text-text-primary truncate">
+                          {account.name}
+                        </h3>
+                        <p className="text-sm text-text-secondary mt-0.5">
+                          {account.bankName || 'Bank Account'} · {getAccountTypeLabel(account.accountType)}
+                          {account.accountNumber && (
+                            <span className="text-text-muted ml-2 font-mono">····{account.accountNumber}</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-base font-semibold text-text-primary tabular-nums">
+                          {formatCurrency(account.currentBalance, account.currency)}
+                        </div>
+                        {account.interestRate != null && account.interestRate > 0 && (
+                          <p className="text-xs text-success">
+                            +{(account.interestRate * 100).toFixed(2)}% APY
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chevron + Delete */}
+                  <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this account?')) {
+                          deleteMutation.mutate(account.id);
+                        }
+                      }}
+                      className="p-2 text-text-muted hover:text-danger transition-colors"
+                      aria-label={`Delete ${account.name}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+
+          {/* Empty State */}
+          {accountCount === 0 && !showAddForm && (
+            <div className="flex flex-col items-center py-16 border-b border-border">
+              <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
+                <Landmark className="w-6 h-6 text-text-muted" />
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary">
+                A blank canvas
+              </h3>
+              <p className="mt-2 text-sm text-text-secondary max-w-[400px] text-center">
+                Begin tracking your bank accounts to see your liquid reserves at a glance.
+              </p>
+              <Button onClick={() => setShowAddForm(true)} className="mt-6 gap-2">
+                <Plus className="w-4 h-4" />
+                Add Your First Account
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <PageFooter
+        icon={<Landmark className="w-5 h-5" />}
+        label="YOUR LIQUID RESERVES"
+        quote="Financial peace isn't about having more. It's about knowing enough."
+      />
     </div>
   );
 }

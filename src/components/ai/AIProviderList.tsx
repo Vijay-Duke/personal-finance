@@ -256,7 +256,7 @@ export function AIProviderList({ onAddNew }: AIProviderListProps) {
                         }
                       }}
                       disabled={deleteMutation.isPending}
-                      title="Delete provider"
+                      aria-label="Delete provider"
                     >
                       <Trash2 className="h-4 w-4 text-text-muted hover:text-danger" />
                     </Button>

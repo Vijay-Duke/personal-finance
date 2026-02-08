@@ -1,17 +1,16 @@
 /**
  * Animated Net Worth Chart
  *
- * Premium line chart with:
- * - Smooth SVG path animations
- * - Gradient fill area
- * - Interactive hover points
- * - Animated tooltips
+ * Refined line chart with:
+ * - Thin, elegant line stroke
+ * - Subtle dots at data points
+ * - Minimal grid and clean tooltip
  * - Theme-aware styling
  */
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface NetWorthDataPoint {
@@ -56,10 +55,10 @@ function ChartTooltip({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-      transition={{ duration: 0.15 }}
+      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+      transition={{ duration: 0.12 }}
       className="absolute z-50 pointer-events-none"
       style={{
         left: position.x,
@@ -67,9 +66,9 @@ function ChartTooltip({
         transform: 'translate(-50%, -100%)',
       }}
     >
-      <div className="bg-bg-elevated/95 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 shadow-xl min-w-[160px]">
-        <div className="text-xs text-text-muted mb-1">{point.date}</div>
-        <div className="text-xl font-bold text-text-primary mb-1">
+      <div className="bg-bg-elevated border border-border rounded-xl px-4 py-3 shadow-lg min-w-[160px]">
+        <div className="text-xs text-text-secondary mb-1">{point.date}</div>
+        <div className="text-lg font-bold text-text-primary mb-1">
           {formatCurrencyFull(point.value)}
         </div>
         {prevPoint && (
@@ -83,7 +82,6 @@ function ChartTooltip({
           </div>
         )}
       </div>
-      <div className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 w-3 h-3 bg-bg-elevated/95 border-r border-b border-border/50 transform rotate-45" />
     </motion.div>
   );
 }
@@ -91,7 +89,7 @@ function ChartTooltip({
 export function AnimatedNetWorthChart({
   data,
   className,
-  height = 300,
+  height = 280,
 }: AnimatedNetWorthChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -117,19 +115,18 @@ export function AnimatedNetWorthChart({
 
   const chartData = useMemo(() => {
     if (data.length === 0 || dimensions.width === 0) {
-      return { 
-        pathD: '', 
-        areaD: '', 
-        points: [], 
-        yTicks: [], 
-        xTicks: [], 
-        chartWidth: 0, 
-        chartHeight: 0, 
-        padding: { top: 40, right: 10, bottom: 40, left: 35 } 
+      return {
+        pathD: '',
+        points: [],
+        yTicks: [],
+        xTicks: [],
+        chartWidth: 0,
+        chartHeight: 0,
+        padding: { top: 20, right: 10, bottom: 32, left: 45 }
       };
     }
 
-    const padding = { top: 40, right: 10, bottom: 40, left: 35 };
+    const padding = { top: 20, right: 10, bottom: 32, left: 45 };
     const chartWidth = dimensions.width - padding.left - padding.right;
     const chartHeight = dimensions.height - padding.top - padding.bottom;
 
@@ -146,23 +143,20 @@ export function AnimatedNetWorthChart({
 
     // Generate smooth path using cubic bezier
     let pathD = `M ${getX(0)} ${getY(data[0].value)}`;
-    
+
     for (let i = 0; i < data.length - 1; i++) {
       const x0 = getX(i);
       const y0 = getY(data[i].value);
       const x1 = getX(i + 1);
       const y1 = getY(data[i + 1].value);
-      
+
       const cp1x = x0 + (x1 - x0) * 0.5;
       const cp1y = y0;
       const cp2x = x1 - (x1 - x0) * 0.5;
       const cp2y = y1;
-      
+
       pathD += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x1} ${y1}`;
     }
-
-    // Area path (closed)
-    const areaD = `${pathD} L ${getX(data.length - 1)} ${padding.top + chartHeight} L ${getX(0)} ${padding.top + chartHeight} Z`;
 
     const points = data.map((d, i) => ({
       x: getX(i),
@@ -171,21 +165,21 @@ export function AnimatedNetWorthChart({
       index: i,
     }));
 
-    // Y-axis ticks
-    const yTicks = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
+    // Y-axis ticks (fewer, cleaner)
+    const yTicks = [0, 0.5, 1].map((t) => ({
       y: padding.top + chartHeight - t * chartHeight,
       value: yMin + t * (yMax - yMin),
     }));
 
-    // X-axis ticks
+    // X-axis ticks (show every other label if many points)
     const xTicks = data.map((d, i) => ({
       x: getX(i),
       label: d.date,
+      showLabel: data.length <= 8 || i % 2 === 0,
     }));
 
     return {
       pathD,
-      areaD,
       points,
       yTicks,
       xTicks,
@@ -195,7 +189,7 @@ export function AnimatedNetWorthChart({
     };
   }, [data, dimensions]);
 
-  const { pathD, areaD, points, yTicks, xTicks, chartWidth, chartHeight, padding } = chartData;
+  const { pathD, points, yTicks, xTicks, chartWidth, padding } = chartData;
 
   const hoveredPoint = hoveredIndex !== null ? points?.[hoveredIndex] : null;
 
@@ -208,28 +202,7 @@ export function AnimatedNetWorthChart({
   return (
     <div ref={containerRef} className={cn('w-full relative', className)} style={{ height }}>
       <svg width="100%" height="100%" className="overflow-visible">
-        <defs>
-          {/* Gradient for the area fill */}
-          <linearGradient id="netWorthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#f05a45" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="#f05a45" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#f05a45" stopOpacity="0" />
-          </linearGradient>
-          
-          {/* Gradient for the line */}
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#f05a45" />
-          </linearGradient>
-
-          {/* Glow filter */}
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Grid lines */}
+        {/* Y-axis grid lines - very subtle */}
         {yTicks?.map((tick, i) => (
           <g key={i}>
             <line
@@ -238,8 +211,8 @@ export function AnimatedNetWorthChart({
               x2={(padding?.left || 0) + (chartWidth || 0)}
               y2={tick.y}
               stroke="currentColor"
-              strokeDasharray="4 4"
-              className="text-border/50"
+              strokeDasharray="2 4"
+              className="text-border/30"
             />
             <text
               x={(padding?.left || 0) - 10}
@@ -252,30 +225,20 @@ export function AnimatedNetWorthChart({
           </g>
         ))}
 
-        {/* Area fill */}
-        <motion.path
-          d={areaD}
-          fill="url(#netWorthGradient)"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-        />
-
-        {/* Line path */}
+        {/* Line path - thin and elegant */}
         <motion.path
           d={pathD}
           fill="none"
-          stroke="url(#lineGradient)"
-          strokeWidth={3}
+          stroke="var(--color-primary-500)"
+          strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter="url(#glow)"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         />
 
-        {/* Data points */}
+        {/* Data points - subtle, visible only on hover or at key points */}
         {points.map((point, i) => (
           <g
             key={i}
@@ -283,42 +246,42 @@ export function AnimatedNetWorthChart({
             onMouseLeave={() => setHoveredIndex(null)}
             className="cursor-pointer"
           >
-            {/* Invisible hit area */}
+            {/* Invisible hit area for easier hovering */}
             <circle
               cx={point.x}
               cy={point.y}
-              r={20}
+              r={15}
               fill="transparent"
             />
-            
-            {/* Visible point */}
+
+            {/* Visible dot - always visible but subtle */}
             <motion.circle
               cx={point.x}
               cy={point.y}
-              r={hoveredIndex === i ? 6 : 4}
-              fill="var(--color-card-bg)"
-              stroke={isPositiveTrend ? '#f05a45' : '#ef4444'}
-              strokeWidth={2}
+              r={hoveredIndex === i ? 5 : 3}
+              fill={hoveredIndex === i ? 'var(--color-primary-500)' : 'var(--color-card-bg)'}
+              stroke="var(--color-primary-500)"
+              strokeWidth={1.5}
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: hoveredIndex === i ? 1.2 : 1, 
-                opacity: 1,
+              animate={{
+                scale: hoveredIndex === i ? 1 : 1,
+                opacity: hoveredIndex === i ? 1 : 0.6,
               }}
-              transition={{ delay: 0.8 + i * 0.05, type: 'spring' }}
+              transition={{ delay: 0.6 + i * 0.04, type: 'spring', stiffness: 300 }}
             />
 
-            {/* Pulse effect on hover */}
+            {/* Subtle ring on hover */}
             {hoveredIndex === i && (
               <motion.circle
                 cx={point.x}
                 cy={point.y}
-                r={6}
+                r={8}
                 fill="none"
-                stroke="#f05a45"
-                strokeWidth={2}
-                initial={{ scale: 1, opacity: 0.5 }}
-                animate={{ scale: 2, opacity: 0 }}
-                transition={{ duration: 0.6, repeat: Infinity }}
+                stroke="var(--color-primary-500)"
+                strokeWidth={1}
+                initial={{ scale: 1, opacity: 0.4 }}
+                animate={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.5, repeat: Infinity }}
               />
             )}
           </g>
@@ -326,15 +289,20 @@ export function AnimatedNetWorthChart({
 
         {/* X-axis labels */}
         {xTicks?.map((tick, i) => (
-          <text
-            key={i}
-            x={tick.x}
-            y={dimensions.height - 10}
-            textAnchor="middle"
-            className="text-xs fill-text-muted"
-          >
-            {tick.label}
-          </text>
+          tick.showLabel && (
+            <text
+              key={i}
+              x={tick.x}
+              y={dimensions.height - 10}
+              textAnchor="middle"
+              className={cn(
+                'text-xs transition-all duration-200',
+                hoveredIndex === i ? 'fill-text-primary font-medium' : 'fill-text-muted'
+              )}
+            >
+              {tick.label}
+            </text>
+          )
         ))}
       </svg>
 
@@ -344,7 +312,7 @@ export function AnimatedNetWorthChart({
           <ChartTooltip
             point={hoveredPoint.data}
             prevPoint={hoveredPoint.index > 0 ? data[hoveredPoint.index - 1] : undefined}
-            position={{ x: hoveredPoint.x, y: hoveredPoint.y - 15 }}
+            position={{ x: hoveredPoint.x, y: hoveredPoint.y - 12 }}
           />
         )}
       </AnimatePresence>

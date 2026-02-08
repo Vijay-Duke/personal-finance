@@ -16,15 +16,16 @@ interface DonutChartProps {
   formatValue?: (value: number) => string;
 }
 
+// Earthy Zen color palette - muted, harmonious tones
 const COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // purple
-  '#ef4444', // red
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#ec4899', // pink
+  '#5f8563', // sage green (primary)
+  '#7c9f80', // light sage
+  '#4a6b4e', // forest green
+  '#a3bea6', // pale sage
+  '#b8943b', // warm ochre
+  '#c4956a', // tan/camel
+  '#6b665e', // warm gray
+  '#b85c5c', // dusty rose (for negative/debt)
 ];
 
 // Glassmorphism tooltip component

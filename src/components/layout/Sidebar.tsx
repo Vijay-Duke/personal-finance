@@ -20,9 +20,8 @@ import {
   X,
   Upload,
   Repeat,
-  Plus,
-  Sparkles,
   FolderOpen,
+  ShieldCheck,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { signOut } from '@/lib/auth/client';
@@ -32,30 +31,16 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
-  count?: number;
 }
 
 interface NavGroup {
   name: string;
   items: NavItem[];
-  addHref?: string;
 }
-
-// Account counts would typically come from a query, using placeholder for now
-const getAccountCounts = () => ({
-  bank: 0,
-  realEstate: 0,
-  stocks: 0,
-  crypto: 0,
-  superannuation: 0,
-  personalAssets: 0,
-  businessAssets: 0,
-  debts: 0,
-});
 
 const navigation: (NavItem | NavGroup)[] = [
   {
-    name: 'Dashboard',
+    name: 'Home',
     href: '/',
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
@@ -66,7 +51,6 @@ const navigation: (NavItem | NavGroup)[] = [
   },
   {
     name: 'Assets',
-    addHref: '/accounts/add',
     items: [
       { name: 'Bank Accounts', href: '/accounts/bank', icon: <Wallet className="h-5 w-5" /> },
       { name: 'Real Estate', href: '/accounts/real-estate', icon: <Building2 className="h-5 w-5" /> },
@@ -96,82 +80,35 @@ const navigation: (NavItem | NavGroup)[] = [
   },
 ];
 
-interface CountBadgeProps {
-  count: number;
-}
-
-function CountBadge({ count }: CountBadgeProps) {
-  if (count === 0) return null;
-  return (
-    <span className="count-badge ml-auto">
-      {count > 99 ? '99+' : count}
-    </span>
-  );
-}
-
 function NavGroupComponent({
   group,
   currentPath,
-  counts,
+  onLinkClick,
 }: {
   group: NavGroup;
   currentPath: string;
-  counts: Record<string, number>;
+  onLinkClick: () => void;
 }) {
-  // Auto-expand if current path is in this group
   const isActiveInGroup = group.items.some((item) =>
     currentPath.startsWith(item.href)
   );
   const [isOpen, setIsOpen] = useState(isActiveInGroup);
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Map href to count key
-  const getCountForHref = (href: string): number => {
-    const countMap: Record<string, keyof typeof counts> = {
-      '/accounts/bank': 'bank',
-      '/accounts/real-estate': 'realEstate',
-      '/accounts/stocks': 'stocks',
-      '/accounts/crypto': 'crypto',
-      '/accounts/superannuation': 'superannuation',
-      '/accounts/personal-assets': 'personalAssets',
-      '/accounts/business-assets': 'businessAssets',
-      '/accounts/debts': 'debts',
-    };
-    const key = countMap[href];
-    return key ? counts[key] || 0 : 0;
-  };
 
   return (
-    <div className="space-y-1">
-      {/* Section Header with improved design */}
-      <div className="flex items-center gap-0.5 px-2">
-        {/* Expand/Collapse Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="group flex flex-1 items-center justify-between py-2 pl-2 pr-1.5 text-xs font-semibold uppercase tracking-wider text-sidebar-text-muted hover:text-sidebar-text transition-all min-touch-target rounded-md hover:bg-sidebar-hover/80"
-          aria-expanded={isOpen}
-        >
-          <span className="leading-none">{group.name}</span>
-          <span className={cn(
-            "flex items-center justify-center w-5 h-5 rounded transition-colors",
-            "group-hover:bg-sidebar-hover"
-          )}>
-            {mounted && (
-              <ChevronRight
-                className={cn(
-                  'h-3.5 w-3.5 text-sidebar-text-muted transition-transform duration-200',
-                  isOpen && 'rotate-90'
-                )}
-                strokeWidth={2.5}
-              />
-            )}
-          </span>
-        </button>
-      </div>
+    <div className="space-y-0.5">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium uppercase tracking-[0.15em] text-text-muted hover:text-text-secondary transition-colors rounded-lg"
+        aria-expanded={isOpen}
+      >
+        <span>{group.name}</span>
+        <ChevronRight
+          className={cn(
+            'h-3.5 w-3.5 transition-transform duration-200',
+            isOpen && 'rotate-90'
+          )}
+        />
+      </button>
       <div
         className={cn(
           'space-y-0.5 overflow-hidden transition-all duration-200',
@@ -179,44 +116,29 @@ function NavGroupComponent({
         )}
       >
         {group.items.map((item) => {
-          const count = getCountForHref(item.href);
           const isActive = currentPath === item.href || currentPath.startsWith(item.href + '/');
-
           return (
             <a
               key={item.name}
               href={item.href}
+              onClick={onLinkClick}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-150 min-touch-target',
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-200',
                 isActive
-                  ? 'bg-sidebar-active text-sidebar-text shadow-md'
-                  : 'text-sidebar-text hover:bg-sidebar-hover hover:translate-x-0.5'
+                  ? 'bg-primary-50 text-primary-700 font-medium'
+                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
               )}
             >
               <span className={cn(
-                'flex-shrink-0 transition-colors',
-                isActive ? 'text-primary-500' : 'text-sidebar-text-muted'
+                'flex-shrink-0',
+                isActive ? 'text-primary-500' : 'text-text-muted'
               )}>
                 {item.icon}
               </span>
-              <span className="flex-1 truncate">{item.name}</span>
-              <CountBadge count={count} />
+              <span className="truncate">{item.name}</span>
             </a>
           );
         })}
-        
-        {/* Add action at the bottom of expanded section */}
-        {group.addHref && (
-          <a
-            href={group.addHref}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-all duration-150 min-touch-target mt-1"
-          >
-            {mounted && (
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
-            )}
-            <span className="flex-1">Add {group.name}</span>
-          </a>
-        )}
       </div>
     </div>
   );
@@ -232,86 +154,72 @@ interface SidebarProps {
     name?: string | null;
     email: string;
     image?: string | null;
+    role?: string;
   };
 }
 
 export function Sidebar({ currentPath, user }: SidebarProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const counts = getAccountCounts();
-  const mobileFocusTrapRef = useFocusTrap(isMobileMenuOpen);
+  const [isOpen, setIsOpen] = useState(false);
+  const focusTrapRef = useFocusTrap(isOpen);
 
-  // Close mobile menu when clicking a link
   const handleLinkClick = () => {
-    setIsMobileMenuOpen(false);
+    setIsOpen(false);
   };
 
-  // Close mobile menu on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsMobileMenuOpen(false);
-      }
+      if (e.key === 'Escape') setIsOpen(false);
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (isMobileMenuOpen) {
+    if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
 
   return (
     <>
-      {/* Mobile Hamburger Button */}
+      {/* Menu Button — top-left of top bar */}
       <button
-        onClick={() => setIsMobileMenuOpen(true)}
-        className="fixed left-4 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl bg-bg-elevated text-text-primary shadow-lg lg:hidden btn-press min-touch-target"
+        onClick={() => setIsOpen(true)}
+        className="fixed left-4 top-3.5 z-40 flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
         aria-label="Open menu"
       >
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
+      {/* Overlay */}
+      {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-bg-base/80 backdrop-blur-sm lg:hidden transition-opacity duration-200"
-          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 z-40 bg-bg-overlay backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
+      {/* Slide-out Panel (left side) */}
       <aside
-        ref={mobileFocusTrapRef}
+        ref={focusTrapRef}
         className={cn(
-          'sidebar flex flex-col transition-transform duration-300',
-          'lg:translate-x-0',
-          isMobileMenuOpen ? 'translate-x-0 open' : '-translate-x-full'
+          'fixed left-0 top-0 z-50 h-full w-80 max-w-[85vw] flex flex-col',
+          'bg-card-bg border-r border-border shadow-xl',
+          'transition-transform duration-300 ease-out',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
         aria-label="Main navigation"
       >
-        {/* Logo & Close Button */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-border-subtle">
-          <a href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 shadow-md group-hover:shadow-glow transition-shadow">
-              <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <span className="text-lg font-display font-semibold text-text-primary">Finance</span>
-          </a>
-          {/* Mobile Close Button */}
+        {/* Header */}
+        <div className="flex h-14 items-center justify-between px-4 border-b border-border">
+          <span className="text-sm font-medium text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>Navigation</span>
           <button
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:bg-sidebar-hover hover:text-text-primary lg:hidden min-touch-target"
+            onClick={() => setIsOpen(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
@@ -319,7 +227,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4" onClick={handleLinkClick}>
+        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
           {navigation.map((item) => {
             if (isNavGroup(item)) {
               return (
@@ -327,7 +235,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
                   key={item.name}
                   group={item}
                   currentPath={currentPath}
-                  counts={counts}
+                  onLinkClick={handleLinkClick}
                 />
               );
             }
@@ -336,16 +244,17 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
               <a
                 key={item.name}
                 href={item.href}
+                onClick={handleLinkClick}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-150 min-touch-target',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-200',
                   isActive
-                    ? 'bg-sidebar-active text-white shadow-md'
-                    : 'text-sidebar-text hover:bg-sidebar-hover hover:translate-x-0.5'
+                    ? 'bg-primary-50 text-primary-700 font-medium'
+                    : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
                 )}
               >
                 <span className={cn(
                   'flex-shrink-0',
-                  isActive ? 'text-primary-300' : 'text-sidebar-text-muted'
+                  isActive ? 'text-primary-500' : 'text-text-muted'
                 )}>
                   {item.icon}
                 </span>
@@ -355,23 +264,39 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
           })}
         </nav>
 
-        {/* Settings & User */}
-        <div className="border-t border-border-subtle p-3 space-y-2" onClick={handleLinkClick}>
+        {/* Admin, Settings & User */}
+        <div className="border-t border-border p-3 space-y-2">
+          {user?.role === 'super_admin' && (
+            <a
+              href="/admin"
+              onClick={handleLinkClick}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-200',
+                currentPath.startsWith('/admin')
+                  ? 'bg-primary-50 text-primary-700 font-medium'
+                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
+              )}
+            >
+              <ShieldCheck className="h-5 w-5 text-text-muted" />
+              Admin
+            </a>
+          )}
           <a
             href="/settings"
+            onClick={handleLinkClick}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-150 min-touch-target',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-200',
               currentPath.startsWith('/settings')
-                ? 'bg-sidebar-active text-white'
-                : 'text-sidebar-text hover:bg-sidebar-hover'
+                ? 'bg-primary-50 text-primary-700 font-medium'
+                : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
             )}
           >
-            <Settings className="h-5 w-5 text-sidebar-text-muted" />
+            <Settings className="h-5 w-5 text-text-muted" />
             Settings
           </a>
 
           {user && (
-            <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 bg-bg-surface/50">
+            <div className="flex items-center gap-3 rounded-lg px-3 py-2.5">
               {user.image ? (
                 <img
                   src={user.image}
@@ -379,7 +304,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
                   className="h-9 w-9 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-sm font-medium text-white">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-sm font-medium text-primary-700">
                   {user.name?.[0] || user.email[0].toUpperCase()}
                 </div>
               )}
@@ -395,7 +320,7 @@ export function Sidebar({ currentPath, user }: SidebarProps) {
                   await signOut();
                   window.location.href = '/auth/login';
                 }}
-                className="rounded-lg p-2 text-text-muted hover:bg-sidebar-hover hover:text-danger transition-colors min-touch-target"
+                className="rounded-lg p-2 text-text-muted hover:bg-bg-surface hover:text-danger transition-colors"
                 title="Sign out"
               >
                 <LogOut className="h-4 w-4" />

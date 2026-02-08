@@ -5,7 +5,6 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { AIChatButton } from '@/components/ai/AIChatButton';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { CommandPalette } from '@/components/CommandPalette';
-import { QuickAddFAB } from '@/components/QuickAddFAB';
 import { OfflineIndicator } from '@/components/ui';
 import { ToastOutlet } from '@/components/ui/ToastOutlet';
 import { ThemeToggle } from '@/components/theme';
@@ -33,21 +32,21 @@ const currentPath = Astro.url.pathname;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Personal Finance - Track your wealth" />
+    <meta name="description" content="Zen Finance - Mindful wealth tracking" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="apple-touch-icon" href="/icons/icon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Finance" />
-    <title>{title} | Personal Finance</title>
+    <meta name="theme-color" content="#faf9f7" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Zen Finance" />
+    <title>{title} | Zen Finance</title>
     <!-- Theme anti-flash script - runs before hydration -->
     <script is:inline set:html={themeScript} />
   </head>
-  <body class="bg-content-bg">
-    <!-- Sidebar -->
+  <body class="bg-bg-base">
+    <!-- Sidebar (slides from right on all screen sizes) -->
     <Sidebar
       client:load
       currentPath={currentPath}
@@ -55,28 +54,31 @@ const currentPath = Astro.url.pathname;
         name: session.user.name,
         email: session.user.email,
         image: session.user.image,
+        role: session.user.role ?? undefined,
       }}
     />
 
-    <!-- Main Content -->
-    <main class="min-h-screen lg:ml-[var(--sidebar-width)]">
-      <!-- Header -->
-      <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card-bg px-4 lg:px-6">
-        <h1 class="text-base lg:text-lg font-semibold text-text-primary pl-12 lg:pl-0">{title}</h1>
-        <div class="flex items-center gap-2 md:gap-4">
-          <!-- Theme Toggle -->
+    <!-- Main Content — always full-width, centered -->
+    <main class="min-h-screen">
+      <!-- Top Bar -->
+      <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-bg-base/80 backdrop-blur-md px-4 md:px-6">
+        <a href="/" class="flex items-center gap-2.5 pl-10">
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
+            <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <span class="text-sm font-medium text-text-primary font-display">Zen Finance</span>
+        </a>
+        <div class="flex items-center gap-1.5">
           <ThemeToggle client:only="react" />
-
-          <!-- Notification Bell -->
           <NotificationBell client:load />
-
-          <!-- AI Chat Button -->
           <AIChatButton client:load />
         </div>
       </header>
 
-      <!-- Page Content -->
-      <div class="p-4 md:p-6 pb-24 lg:pb-6">
+      <!-- Page Content — centered, breathable -->
+      <div class="mx-auto max-w-[720px] px-5 pt-12 pb-32 md:px-8 lg:pb-20">
         <slot />
       </div>
     </main>
@@ -89,11 +91,6 @@ const currentPath = Astro.url.pathname;
 
     <!-- Command Palette -->
     <CommandPalette client:load />
-
-    <!-- Quick Add FAB (Desktop) -->
-    <div class="hidden lg:block">
-      <QuickAddFAB client:load />
-    </div>
 
     <!-- Mobile Bottom Navigation -->
     <BottomNav client:load currentPath={currentPath} />

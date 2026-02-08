@@ -46,7 +46,26 @@ export const queryKeys = {
 
   // User
   user: ['user'] as const,
+  currentUser: ['currentUser'] as const,
   household: ['household'] as const,
+  householdMembers: ['household', 'members'] as const,
+  inviteCodes: ['household', 'invites'] as const,
+
+  // Household activity
+  householdActivity: ['household', 'activity'] as const,
+
+  // Notifications
+  notificationPreferences: ['user', 'notification-preferences'] as const,
+
+  // Sessions
+  userSessions: ['user', 'sessions'] as const,
+
+  // Admin
+  adminStats: ['admin', 'stats'] as const,
+  adminSettings: ['admin', 'settings'] as const,
+  adminHouseholds: ['admin', 'households'] as const,
+  adminHousehold: (id: string) => ['admin', 'households', id] as const,
+  adminUsers: ['admin', 'users'] as const,
 };
 
 /**

@@ -12,14 +12,5 @@ if (!session) {
 ---
 
 <AppLayout title="Insurance">
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-bold text-text-primary">Insurance</h1>
-      <p class="text-text-muted">
-        Track all your insurance policies and coverage.
-      </p>
-    </div>
-
-    <InsurancePage client:only="react" />
-  </div>
+  <InsurancePage client:only="react" />
 </AppLayout>

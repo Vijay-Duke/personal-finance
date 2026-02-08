@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Landmark, PiggyBank, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '../ui/PageHeader';
+import { PageFooter } from '../ui/PageFooter';
+import { SectionHeader } from '../ui/SectionHeader';
 import { cn } from '@/lib/utils';
+
+// Design system: Superannuation asset color is Sage
+const SUPER_SAGE = '#5f8563';
 
 interface SuperannuationAccount {
   id: string;
@@ -157,52 +164,77 @@ export function SuperannuationList() {
     return labels[option] || option;
   };
 
+  // Loading — skeleton shimmer per design system
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="space-y-16">
+        <PageHeader label="SUPERANNUATION" title="Retirement Savings" />
+        <div className="space-y-0">
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-[72px] border-b border-border animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{
+                background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)',
+                backgroundSize: '200% 100%',
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error loading accounts</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })} className="mt-4">
-          Retry
-        </Button>
+      <div className="space-y-16">
+        <PageHeader label="SUPERANNUATION" title="Retirement Savings" />
+        <div className="flex flex-col items-center py-16">
+          <p className="text-[var(--color-danger)] text-[15px]">Something needs attention</p>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['accounts'] })}
+            className="mt-6"
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
 
   const totalBalance = accounts?.reduce((sum, acc) => sum + acc.currentBalance, 0) || 0;
+  const accountCount = accounts?.length || 0;
 
   return (
-    <div className="space-y-6">
-      {/* Summary Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-lg">Total Superannuation</CardTitle>
-            <CardDescription>Across all retirement accounts</CardDescription>
-          </div>
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(totalBalance, 'AUD')}
-          </div>
-        </CardHeader>
-      </Card>
+    <div className="space-y-16">
+      {/* Hero Header */}
+      <PageHeader label="SUPERANNUATION" title="Retirement Savings">
+        <div className="hero-number">{formatCurrency(totalBalance, 'AUD')}</div>
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          Across {accountCount} account{accountCount !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
 
-      {/* Add Account Form */}
-      {showAddForm ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Superannuation Account</CardTitle>
-            <CardDescription>Track your retirement savings</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Accounts Section */}
+      <div className="space-y-8">
+        <div className="flex items-end justify-between">
+          <SectionHeader label="YOUR ACCOUNTS" title="Overview" />
+          {!showAddForm && (
+            <Button onClick={() => setShowAddForm(true)} className="gap-2">
+              <Plus className="w-[18px] h-[18px]" />
+              Add Account
+            </Button>
+          )}
+        </div>
+
+        {/* Add Account Form */}
+        {showAddForm && (
+          <Card>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">
+              New Superannuation Account
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Account Name *</Label>
                   <Input
@@ -221,7 +253,12 @@ export function SuperannuationList() {
                     name="superType"
                     value={formData.superType}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{
+                      backgroundColor: 'var(--color-input-bg)',
+                      borderColor: 'var(--color-input-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
                   >
                     <optgroup label="Australian">
                       <option value="super_accumulation">Accumulation</option>
@@ -285,7 +322,12 @@ export function SuperannuationList() {
                     name="currency"
                     value={formData.currency}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                    style={{
+                      backgroundColor: 'var(--color-input-bg)',
+                      borderColor: 'var(--color-input-border)',
+                      color: 'var(--color-text-primary)',
+                    }}
                   >
                     <option value="AUD">AUD</option>
                     <option value="USD">USD</option>
@@ -295,8 +337,8 @@ export function SuperannuationList() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium">Contributions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="font-medium text-[var(--color-text-primary)]">Contributions</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="employerContributionRate">Employer Contribution (%)</Label>
                     <Input
@@ -325,8 +367,8 @@ export function SuperannuationList() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium">Investment</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="font-medium text-[var(--color-text-primary)]">Investment</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="investmentOption">Investment Option</Label>
                     <select
@@ -334,7 +376,12 @@ export function SuperannuationList() {
                       name="investmentOption"
                       value={formData.investmentOption}
                       onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]"
+                      style={{
+                        backgroundColor: 'var(--color-input-bg)',
+                        borderColor: 'var(--color-input-border)',
+                        color: 'var(--color-text-primary)',
+                      }}
                     >
                       <option value="conservative">Conservative</option>
                       <option value="balanced">Balanced</option>
@@ -357,7 +404,7 @@ export function SuperannuationList() {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-3 justify-end pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
@@ -366,109 +413,109 @@ export function SuperannuationList() {
                 </Button>
               </div>
               {createMutation.error && (
-                <p className="text-red-600 text-sm">{createMutation.error.message}</p>
+                <p className="text-[var(--color-danger)] text-sm">{createMutation.error.message}</p>
               )}
             </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>
-          + Add Superannuation Account
-        </Button>
-      )}
+          </Card>
+        )}
 
-      {/* Accounts List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {accounts?.map(account => (
-          <Card key={account.id} className={cn(!account.isActive && 'opacity-50')}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🏛️</span>
-                  <div>
-                    <CardTitle className="text-lg">{account.name}</CardTitle>
-                    <CardDescription>
-                      {account.fundName || getSuperTypeLabel(account.superType)}
-                    </CardDescription>
-                  </div>
-                </div>
-                {account.memberNumber && (
-                  <span className="text-xs text-muted-foreground">
-                    #{account.memberNumber}
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(account.currentBalance, account.currency)}
+        {/* Accounts List */}
+        <div className="space-y-0">
+          {accounts?.map((account) => (
+            <a
+              key={account.id}
+              href={`/accounts/${account.id}`}
+              className={cn(
+                'group block py-5 border-b border-border transition-colors',
+                'hover:bg-surface-elevated/50',
+                !account.isActive && 'opacity-50'
+              )}
+            >
+              <div className="flex items-center gap-4">
+                {/* Icon - 40px rounded */}
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${SUPER_SAGE}15`, color: SUPER_SAGE }}
+                >
+                  <Landmark className="w-5 h-5" />
                 </div>
 
-                {/* Contribution Rates */}
-                {(account.employerContributionRate || account.employeeContributionRate) && (
-                  <div className="flex gap-4 text-sm">
-                    {account.employerContributionRate && (
-                      <div>
-                        <span className="text-muted-foreground">Employer: </span>
-                        <span>{(account.employerContributionRate * 100).toFixed(1)}%</span>
+                {/* Content - name/details left, value right */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-text-primary">{account.name}</h3>
+                      <p className="text-sm text-text-secondary">
+                        {account.fundName || getSuperTypeLabel(account.superType)}
+                        {account.memberNumber && ` · #${account.memberNumber}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-base font-semibold text-text-primary">
+                        {formatCurrency(account.currentBalance, account.currency)}
                       </div>
-                    )}
-                    {account.employeeContributionRate && (
-                      <div>
-                        <span className="text-muted-foreground">Personal: </span>
-                        <span>{(account.employeeContributionRate * 100).toFixed(1)}%</span>
-                      </div>
-                    )}
+                      {(account.employerContributionRate || account.employeeContributionRate) && (
+                        <div className="text-sm text-text-secondary">
+                          {account.employerContributionRate && (
+                            <span>Employer: {(account.employerContributionRate * 100).toFixed(1)}%</span>
+                          )}
+                          {account.employerContributionRate && account.employeeContributionRate && ' · '}
+                          {account.employeeContributionRate && (
+                            <span>Personal: {(account.employeeContributionRate * 100).toFixed(1)}%</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
 
-                {/* Investment Option */}
-                {account.investmentOption && (
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Investment: </span>
-                    <span>{getInvestmentOptionLabel(account.investmentOption)}</span>
-                  </div>
-                )}
-
-                {/* Preservation Age */}
-                {account.preservationAge && (
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Preservation Age: </span>
-                    <span>{account.preservationAge}</span>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={`/accounts/${account.id}`}>View Details</a>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => {
+                {/* Actions - hover reveal */}
+                <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       if (confirm('Are you sure you want to delete this account?')) {
                         deleteMutation.mutate(account.id);
                       }
                     }}
+                    className="p-2 text-text-muted hover:text-danger"
                   >
-                    Delete
-                  </Button>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <ChevronRight className="w-5 h-5 text-text-muted" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </a>
+          ))}
 
-        {accounts?.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p className="text-4xl mb-2">🏛️</p>
-            <p>No superannuation accounts yet.</p>
-            <p className="text-sm">Click "Add Superannuation Account" to track your retirement savings.</p>
-          </div>
-        )}
+          {/* Empty State */}
+          {accountCount === 0 && !showAddForm && (
+            <div className="flex flex-col items-center py-16 border-b border-border">
+              <div className="w-12 h-12 rounded-full bg-surface-elevated flex items-center justify-center mb-4">
+                <PiggyBank className="w-6 h-6 text-text-muted" />
+              </div>
+              <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">
+                A blank canvas
+              </h3>
+              <p className="mt-2 text-[15px] text-[var(--color-text-secondary)] max-w-[400px] text-center">
+                Begin tracking your retirement savings to watch your future grow mindfully.
+              </p>
+              <Button onClick={() => setShowAddForm(true)} className="mt-6 gap-2">
+                <Plus className="w-[18px] h-[18px]" />
+                Add Your First Account
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Footer */}
+      <PageFooter
+        icon={<PiggyBank className="w-5 h-5" />}
+        label="YOUR RETIREMENT SAVINGS"
+        quote="Compound interest is the eighth wonder of the world."
+      />
     </div>
   );
 }

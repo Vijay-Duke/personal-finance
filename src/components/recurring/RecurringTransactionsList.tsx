@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { PageFooter } from '@/components/ui/PageFooter';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import {
   Plus,
-  Loader2,
   Repeat,
   CalendarClock,
   Trash2,
@@ -95,6 +97,9 @@ const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+const selectClassName = "flex h-11 w-full rounded-[var(--radius-md)] border px-4 py-3 text-[15px] transition-colors focus:outline-none focus:ring-[3px]";
+const selectStyle = { backgroundColor: 'var(--color-input-bg)', borderColor: 'var(--color-input-border)', color: 'var(--color-text-primary)' };
 
 export function RecurringTransactionsList() {
   const queryClient = useQueryClient();
@@ -299,9 +304,9 @@ export function RecurringTransactionsList() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'income':
-        return <ArrowDownCircle className="h-4 w-4 text-green-600" />;
+        return <ArrowDownCircle className="h-4 w-4 text-[var(--color-success)]" />;
       case 'expense':
-        return <ArrowUpCircle className="h-4 w-4 text-red-600" />;
+        return <ArrowUpCircle className="h-4 w-4 text-[var(--color-danger)]" />;
       case 'transfer':
         return <ArrowRightCircle className="h-4 w-4 text-blue-600" />;
       default:
@@ -314,456 +319,447 @@ export function RecurringTransactionsList() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="py-12">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-16">
+        <PageHeader label="RECURRING" title="Scheduled Flow" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="h-36 rounded-[var(--radius-xl)] animate-[shimmer_1.8s_ease-in-out_infinite]"
+              style={{ background: 'linear-gradient(90deg, var(--color-skeleton-bg) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-bg) 75%)', backgroundSize: '200% 100%' }}
+            />
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Recurring Transactions</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your scheduled recurring transactions
-          </p>
-        </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Schedule
+    <div className="space-y-16">
+      {/* Page Header */}
+      <PageHeader label="RECURRING" title="Scheduled Flow">
+        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+          {activeSchedules.length} active schedule{activeSchedules.length !== 1 ? 's' : ''}
+        </p>
+      </PageHeader>
+
+      {/* Section Header with Add Button */}
+      <div className="flex items-end justify-between">
+        <SectionHeader label="ACTIVE SCHEDULES" title="Overview" />
+        <Button onClick={() => setShowForm(true)} className="gap-2">
+          <Plus className="w-[18px] h-[18px]" /> Add Schedule
         </Button>
       </div>
 
       {/* Form */}
       {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingSchedule ? 'Edit' : 'New'} Recurring Transaction</CardTitle>
-            <CardDescription>
-              Set up a recurring transaction schedule
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Account */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+            {editingSchedule ? 'Edit' : 'New'} Recurring Transaction
+          </h3>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-6">
+            Set up a recurring transaction schedule
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Account */}
+              <div className="space-y-2">
+                <Label htmlFor="accountId">Account</Label>
+                <select
+                  id="accountId"
+                  value={formData.accountId}
+                  onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
+                  className={selectClassName}
+                  style={selectStyle}
+                  required
+                >
+                  <option value="">Select account</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Type */}
+              <div className="space-y-2">
+                <Label htmlFor="type">Type</Label>
+                <select
+                  id="type"
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as TransactionType })}
+                  className={selectClassName}
+                  style={selectStyle}
+                  required
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                  <option value="transfer">Transfer</option>
+                </select>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label htmlFor="categoryId">Category</Label>
+                <select
+                  id="categoryId"
+                  value={formData.categoryId}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                  className={selectClassName}
+                  style={selectStyle}
+                >
+                  <option value="">Select category</option>
+                  {categories
+                    .filter((c) => c.type === formData.type)
+                    .map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Monthly subscription"
+                />
+              </div>
+
+              {/* Merchant */}
+              <div className="space-y-2">
+                <Label htmlFor="merchant">Merchant</Label>
+                <Input
+                  id="merchant"
+                  value={formData.merchant}
+                  onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
+                  placeholder="Netflix, etc."
+                />
+              </div>
+            </div>
+
+            {/* Frequency Section */}
+            <div className="border-t pt-4 mt-4" style={{ borderColor: 'var(--color-border)' }}>
+              <h4 className="font-medium mb-4 text-[var(--color-text-primary)]">Schedule</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Frequency */}
                 <div className="space-y-2">
-                  <Label htmlFor="accountId">Account</Label>
+                  <Label htmlFor="frequency">Frequency</Label>
                   <select
-                    id="accountId"
-                    value={formData.accountId}
-                    onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    id="frequency"
+                    value={formData.frequency}
+                    onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+                    className={selectClassName}
+                    style={selectStyle}
                     required
                   >
-                    <option value="">Select account</option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
+                    {frequencies.map((freq) => (
+                      <option key={freq.value} value={freq.value}>
+                        {freq.label}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="type">Type</Label>
-                  <select
-                    id="type"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as TransactionType })}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    required
-                  >
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                    <option value="transfer">Transfer</option>
-                  </select>
-                </div>
-
-                {/* Amount */}
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="space-y-2">
-                  <Label htmlFor="categoryId">Category</Label>
-                  <select
-                    id="categoryId"
-                    value={formData.categoryId}
-                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    <option value="">Select category</option>
-                    {categories
-                      .filter((c) => c.type === formData.type)
-                      .map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Monthly subscription"
-                  />
-                </div>
-
-                {/* Merchant */}
-                <div className="space-y-2">
-                  <Label htmlFor="merchant">Merchant</Label>
-                  <Input
-                    id="merchant"
-                    value={formData.merchant}
-                    onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
-                    placeholder="Netflix, etc."
-                  />
-                </div>
-              </div>
-
-              {/* Frequency Section */}
-              <div className="border-t pt-4 mt-4">
-                <h4 className="font-medium mb-4">Schedule</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Frequency */}
+                {/* Day of Week (for weekly) */}
+                {formData.frequency === 'weekly' && (
                   <div className="space-y-2">
-                    <Label htmlFor="frequency">Frequency</Label>
+                    <Label htmlFor="dayOfWeek">Day of Week</Label>
                     <select
-                      id="frequency"
-                      value={formData.frequency}
-                      onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      required
+                      id="dayOfWeek"
+                      value={formData.dayOfWeek}
+                      onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
+                      className={selectClassName}
+                      style={selectStyle}
                     >
-                      {frequencies.map((freq) => (
-                        <option key={freq.value} value={freq.value}>
-                          {freq.label}
+                      {daysOfWeek.map((day, i) => (
+                        <option key={i} value={i}>
+                          {day}
                         </option>
                       ))}
                     </select>
                   </div>
+                )}
 
-                  {/* Day of Week (for weekly) */}
-                  {formData.frequency === 'weekly' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="dayOfWeek">Day of Week</Label>
-                      <select
-                        id="dayOfWeek"
-                        value={formData.dayOfWeek}
-                        onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      >
-                        {daysOfWeek.map((day, i) => (
-                          <option key={i} value={i}>
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Day of Month (for monthly/quarterly/yearly) */}
-                  {['monthly', 'quarterly', 'yearly'].includes(formData.frequency) && (
-                    <div className="space-y-2">
-                      <Label htmlFor="dayOfMonth">Day of Month</Label>
-                      <select
-                        id="dayOfMonth"
-                        value={formData.dayOfMonth}
-                        onChange={(e) => setFormData({ ...formData, dayOfMonth: parseInt(e.target.value) })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      >
-                        {Array.from({ length: 31 }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Month (for yearly) */}
-                  {formData.frequency === 'yearly' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="month">Month</Label>
-                      <select
-                        id="month"
-                        value={formData.month}
-                        onChange={(e) => setFormData({ ...formData, month: parseInt(e.target.value) })}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      >
-                        {months.map((monthName, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            {monthName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Start Date */}
+                {/* Day of Month (for monthly/quarterly/yearly) */}
+                {['monthly', 'quarterly', 'yearly'].includes(formData.frequency) && (
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      required
-                    />
+                    <Label htmlFor="dayOfMonth">Day of Month</Label>
+                    <select
+                      id="dayOfMonth"
+                      value={formData.dayOfMonth}
+                      onChange={(e) => setFormData({ ...formData, dayOfMonth: parseInt(e.target.value) })}
+                      className={selectClassName}
+                      style={selectStyle}
+                    >
+                      {Array.from({ length: 31 }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                )}
 
-                  {/* End Date */}
+                {/* Month (for yearly) */}
+                {formData.frequency === 'yearly' && (
                   <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date (Optional)</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    />
+                    <Label htmlFor="month">Month</Label>
+                    <select
+                      id="month"
+                      value={formData.month}
+                      onChange={(e) => setFormData({ ...formData, month: parseInt(e.target.value) })}
+                      className={selectClassName}
+                      style={selectStyle}
+                    >
+                      {months.map((monthName, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {monthName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </div>
+                )}
 
-                {/* Auto-create checkbox */}
-                <div className="flex items-center gap-2 mt-4">
-                  <input
-                    type="checkbox"
-                    id="autoCreate"
-                    checked={formData.autoCreate}
-                    onChange={(e) => setFormData({ ...formData, autoCreate: e.target.checked })}
-                    className="h-4 w-4 rounded border-gray-300"
+                {/* Start Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    required
                   />
-                  <Label htmlFor="autoCreate" className="font-normal">
-                    Automatically create transactions when due
-                  </Label>
+                </div>
+
+                {/* End Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date (Optional)</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  />
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                >
-                  {(createMutation.isPending || updateMutation.isPending) && (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  )}
-                  {editingSchedule ? 'Update' : 'Create'} Schedule
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
+              {/* Auto-create checkbox */}
+              <div className="flex items-center gap-2 mt-4">
+                <input
+                  type="checkbox"
+                  id="autoCreate"
+                  checked={formData.autoCreate}
+                  onChange={(e) => setFormData({ ...formData, autoCreate: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="autoCreate" className="font-normal">
+                  Automatically create transactions when due
+                </Label>
               </div>
-            </form>
-          </CardContent>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-4">
+              <Button
+                type="submit"
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {editingSchedule ? 'Update' : 'Create'} Schedule
+              </Button>
+              <Button type="button" variant="outline" onClick={resetForm}>
+                Cancel
+              </Button>
+            </div>
+          </form>
         </Card>
       )}
 
       {/* Active Schedules */}
       {activeSchedules.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Repeat className="h-5 w-5" />
-              Active Schedules
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {activeSchedules.map((schedule) => (
-                <div
-                  key={schedule.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card"
-                >
-                  <div className="flex items-center gap-4">
-                    {getTypeIcon(schedule.type)}
-                    <div>
-                      <div className="font-medium flex items-center gap-2">
-                        {schedule.description || schedule.merchant || 'Untitled'}
-                        {schedule.categoryName && (
-                          <span
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: schedule.categoryColor
-                                ? `${schedule.categoryColor}20`
-                                : undefined,
-                              color: schedule.categoryColor || undefined,
-                            }}
-                          >
-                            {schedule.categoryName}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />
-                          {schedule.accountName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CalendarClock className="h-3 w-3" />
-                          {formatFrequency(schedule)}
-                        </span>
-                      </div>
-                      {schedule.nextOccurrence && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Next: {new Date(schedule.nextOccurrence).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div
-                        className={`font-semibold ${
-                          schedule.type === 'expense' ? 'text-red-600' : 'text-green-600'
-                        }`}
-                      >
-                        {schedule.type === 'expense' ? '-' : '+'}
-                        {schedule.currency} {schedule.amount.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {schedule.occurrenceCount} occurrences
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleActive(schedule)}
-                        title="Pause schedule"
-                      >
-                        <Pause className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(schedule)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (confirm('Delete this recurring schedule?')) {
-                            deleteMutation.mutate(schedule.id);
-                          }
+        <div className="space-y-4">
+          {activeSchedules.map((schedule) => (
+            <Card
+              key={schedule.id}
+              className="flex items-center justify-between p-4"
+            >
+              <div className="flex items-center gap-4">
+                {getTypeIcon(schedule.type)}
+                <div>
+                  <div className="font-medium flex items-center gap-2 text-[var(--color-text-primary)]">
+                    {schedule.description || schedule.merchant || 'Untitled'}
+                    {schedule.categoryName && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: schedule.categoryColor
+                            ? `${schedule.categoryColor}20`
+                            : undefined,
+                          color: schedule.categoryColor || undefined,
                         }}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                        {schedule.categoryName}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-[var(--color-text-muted)] flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <Building2 className="h-3 w-3" />
+                      {schedule.accountName}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <CalendarClock className="h-3 w-3" />
+                      {formatFrequency(schedule)}
+                    </span>
+                  </div>
+                  {schedule.nextOccurrence && (
+                    <div className="text-xs text-[var(--color-text-muted)] mt-1">
+                      Next: {new Date(schedule.nextOccurrence).toLocaleDateString()}
                     </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div
+                    className={`font-semibold ${
+                      schedule.type === 'expense' ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'
+                    }`}
+                  >
+                    {schedule.type === 'expense' ? '-' : '+'}
+                    {schedule.currency} {schedule.amount.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-[var(--color-text-muted)]">
+                    {schedule.occurrenceCount} occurrences
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleActive(schedule)}
+                    title="Pause schedule"
+                  >
+                    <Pause className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEdit(schedule)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (confirm('Delete this recurring schedule?')) {
+                        deleteMutation.mutate(schedule.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Inactive Schedules */}
       {inactiveSchedules.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-muted-foreground">
-              <Pause className="h-5 w-5" />
-              Paused Schedules
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {inactiveSchedules.map((schedule) => (
-                <div
-                  key={schedule.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-muted/50"
-                >
-                  <div className="flex items-center gap-4 opacity-60">
-                    {getTypeIcon(schedule.type)}
-                    <div>
-                      <div className="font-medium">
-                        {schedule.description || schedule.merchant || 'Untitled'}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatFrequency(schedule)} • {schedule.accountName}
-                      </div>
-                    </div>
+        <div className="space-y-4">
+          <SectionHeader label="PAUSED" title="Inactive Schedules" />
+          {inactiveSchedules.map((schedule) => (
+            <Card
+              key={schedule.id}
+              className="flex items-center justify-between p-4 opacity-70"
+            >
+              <div className="flex items-center gap-4 opacity-60">
+                {getTypeIcon(schedule.type)}
+                <div>
+                  <div className="font-medium text-[var(--color-text-primary)]">
+                    {schedule.description || schedule.merchant || 'Untitled'}
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right opacity-60">
-                      <div className="font-semibold">
-                        {schedule.currency} {schedule.amount.toLocaleString()}
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleActive(schedule)}
-                        title="Resume schedule"
-                      >
-                        <Play className="h-4 w-4 text-green-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (confirm('Delete this recurring schedule?')) {
-                            deleteMutation.mutate(schedule.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                  <div className="text-sm text-[var(--color-text-muted)]">
+                    {formatFrequency(schedule)} &bull; {schedule.accountName}
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right opacity-60">
+                  <div className="font-semibold text-[var(--color-text-primary)]">
+                    {schedule.currency} {schedule.amount.toLocaleString()}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleActive(schedule)}
+                    title="Resume schedule"
+                  >
+                    <Play className="h-4 w-4 text-[var(--color-success)]" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (confirm('Delete this recurring schedule?')) {
+                        deleteMutation.mutate(schedule.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Empty State */}
       {schedules.length === 0 && (
-        <Card>
-          <CardContent className="py-12">
-            <div className="text-center text-muted-foreground">
-              <Repeat className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="font-medium mb-1">No recurring transactions</h3>
-              <p className="text-sm mb-4">
-                Set up recurring transactions to track subscriptions, bills, and regular income.
-              </p>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Schedule
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center py-16">
+          <div className="mb-4 opacity-40" style={{ color: 'var(--color-text-muted)' }}>
+            <Repeat className="w-12 h-12" />
+          </div>
+          <h3 className="text-xl font-semibold text-[var(--color-text-primary)]">A clean slate</h3>
+          <p className="mt-2 text-[15px] text-[var(--color-text-secondary)] max-w-[400px] text-center">
+            Set up recurring transactions to automate your financial tracking.
+          </p>
+          <Button onClick={() => setShowForm(true)} className="mt-6 gap-2">
+            <Plus className="w-[18px] h-[18px]" /> Add First Schedule
+          </Button>
+        </div>
       )}
+
+      {/* Page Footer */}
+      <PageFooter
+        icon={<Repeat className="w-5 h-5" />}
+        label="YOUR SCHEDULED FLOW"
+        quote="Consistency is the hallmark of the unimaginative."
+      />
     </div>
   );
 }

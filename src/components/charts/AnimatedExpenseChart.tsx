@@ -66,8 +66,8 @@ export function AnimatedExpenseChart({
       {/* Header with total */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-rose-500/10">
-            <Receipt className="w-4 h-4 text-rose-500" />
+          <div className="p-2 rounded-lg bg-warning/10">
+            <Receipt className="w-4 h-4 text-warning" />
           </div>
           <div>
             <span className="text-xs text-text-muted block">Total Expenses</span>
@@ -123,9 +123,9 @@ export function AnimatedExpenseChart({
                       index < 3
                         ? 'bg-gradient-to-br text-white'
                         : 'bg-bg-elevated text-text-muted',
-                      index === 0 && 'from-amber-400 to-amber-600',
-                      index === 1 && 'from-slate-300 to-slate-500',
-                      index === 2 && 'from-orange-400 to-orange-600'
+                      index === 0 && 'from-primary-400 to-primary-600',
+                      index === 1 && 'from-primary-300 to-primary-500',
+                      index === 2 && 'from-warning to-warning-dark'
                     )}
                     whileHover={{ scale: 1.1 }}
                     transition={{ type: 'spring' }}
@@ -208,7 +208,7 @@ export function AnimatedExpenseChart({
                             <span className="font-medium text-text-secondary">{formatCurrency(totalExpenses)}</span>
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 text-rose-500">
+                        <div className="flex items-center gap-1 text-warning">
                           <TrendingDown className="w-3 h-3" />
                           <span>{percentOfTotal.toFixed(1)}% of total</span>
                         </div>
@@ -248,13 +248,13 @@ export function AnimatedExpenseChart({
 // Sample data generator
 export function generateExpenseData(): ExpenseCategory[] {
   return [
-    { name: 'Housing', value: 2500, color: '#3b82f6' },
-    { name: 'Food & Dining', value: 800, color: '#10b981' },
-    { name: 'Transportation', value: 600, color: '#f59e0b' },
-    { name: 'Entertainment', value: 400, color: '#8b5cf6' },
-    { name: 'Shopping', value: 350, color: '#ec4899' },
-    { name: 'Utilities', value: 300, color: '#06b6d4' },
-    { name: 'Healthcare', value: 200, color: '#ef4444' },
-    { name: 'Other', value: 150, color: '#6b7280' },
+    { name: 'Housing', value: 2500, color: '#5f8563' },
+    { name: 'Food & Dining', value: 800, color: '#7c9f80' },
+    { name: 'Transportation', value: 600, color: '#b8943b' },
+    { name: 'Entertainment', value: 400, color: '#c4956a' },
+    { name: 'Shopping', value: 350, color: '#a3bea6' },
+    { name: 'Utilities', value: 300, color: '#6b665e' },
+    { name: 'Healthcare', value: 200, color: '#b85c5c' },
+    { name: 'Other', value: 150, color: '#8a857c' },
   ];
 }
